@@ -8,6 +8,10 @@
 
 </div>
 
+![FusionのCADアセンブリからURDFのLink・Joint構造を経てROS 2で表示するまでの概念図](docs/images/fusion-to-urdf-workflow.png)
+
+<p align="center"><sub>FusionのアセンブリからXacro・STLを生成し、ROS 2で表示する流れ（概念図）</sub></p>
+
 Fusionのコンポーネントとジョイントから、Xacro、STLメッシュ、ROS 2表示用ファイルをまとめて生成します。出力前後にジョイントツリーとメッシュ参照を検証し、同一形状のSTLは可能な範囲で再利用します。
 
 > [!IMPORTANT]
