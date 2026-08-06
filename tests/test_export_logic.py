@@ -157,6 +157,14 @@ class MissingOriginFixedJoint(FusionJoint):
         self.geometryOrOriginTwo = None
 
 
+class MissingOriginContinuousJoint(MissingOriginFixedJoint):
+    def __init__(self, name, occurrence_one, occurrence_two, origin):
+        super().__init__(name, occurrence_one, occurrence_two)
+        self.jointMotion = RevoluteMotion()
+        self.jointMotion.rotationLimits = DisabledLimits()
+        self.geometryTwoTransform = Transform(origin)
+
+
 class Attribute:
     def __init__(self, value):
         self.value = value
@@ -366,6 +374,20 @@ class ExportLogicTests(unittest.TestCase):
         self.assertEqual(joints['fixed_joint_01']['child'], 'arm_link')
         self.assertEqual(joints['fixed_joint_01']['xyz'], [1.0, 0.2, -0.3])
         self.assertEqual(joints['fixed_joint_01']['rpy'], [0.0, 0.0, 0.0])
+
+    def test_continuous_joint_without_geometry_uses_geometry_transform(self):
+        base = Occurrence('base_link', 'base_link')
+        chest = Occurrence('c_chest_c_1', 'c_chest_c_1')
+        fusion_joint = MissingOriginContinuousJoint(
+            'base_link1', chest, base, [12.5, -25.0, 37.5]
+        )
+
+        joints, msg = Joint.make_joints_dict(JointRoot([fusion_joint]), Joint.SUCCESS_MSG)
+
+        self.assertEqual(msg, Joint.SUCCESS_MSG)
+        self.assertEqual(joints['continuous_joint_01']['parent'], 'base_link')
+        self.assertEqual(joints['continuous_joint_01']['child'], 'c_chest_c_1')
+        self.assertEqual(joints['continuous_joint_01']['xyz'], [0.125, -0.25, 0.375])
 
     def test_fixed_joint_without_origin_prefers_transform2(self):
         base = Occurrence('base_link1', 'base_link1')

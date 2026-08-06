@@ -296,7 +296,11 @@ def _standard_joint_xyz(joint):
                 data = joint.geometryOrOriginTwo.origin.asArray()
             return [round(i / 100.0, 6) for i in data]
         except:
-            return None
+            try:
+                data = joint.geometryTwoTransform.translation.asArray()
+                return [round(i / 100.0, 6) for i in data]
+            except:
+                return None
 
 def _as_built_joint_xyz(joint):
     try:
