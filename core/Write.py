@@ -294,6 +294,7 @@ def write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict,
             center_of_mass=center_of_mass, repo=repo,
             mass=inertial_dict['base_link']['mass'],
             inertia_tensor=inertial_dict['base_link']['inertia'],
+            link_material_name=Link.material_name('base_link'),
             mesh_file=_mesh_file_for_link(mesh_reuse_info, 'base_link'),
             mesh_offset=_mesh_offset_for_link(mesh_reuse_info, 'base_link'))
         links_xyz_dict[link.name] = link.xyz
@@ -310,6 +311,7 @@ def write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict,
                 center_of_mass=center_of_mass,\
                 repo=repo, mass=inertial_dict[name]['mass'],\
                 inertia_tensor=inertial_dict[name]['inertia'],\
+                link_material_name=Link.material_name(name),\
                 mesh_file=_mesh_file_for_link(mesh_reuse_info, name),\
                 mesh_offset=_mesh_offset_for_link(mesh_reuse_info, name))
             links_xyz_dict[link.name] = link.xyz            
@@ -407,10 +409,11 @@ def write_materials_xacro(joints_dict, links_xyz_dict, inertial_dict, package_na
         f.write('<?xml version="1.0" ?>\n')
         f.write('<robot name="{}" xmlns:xacro="http://www.ros.org/wiki/xacro" >\n'.format(robot_name))
         f.write('\n')
-        f.write('<material name="silver">\n')
-        f.write('  <color rgba="0.700 0.700 0.700 1.000"/>\n')
-        f.write('</material>\n')
-        f.write('\n')
+        for name in sorted(inertial_dict):
+            rgba = inertial_dict[name].get('rgba', Link.DEFAULT_RGBA)
+            f.write('<material name="{}">\n'.format(Link.material_name(name)))
+            f.write('  <color rgba="{}"/>\n'.format(' '.join(['{:.6f}'.format(value) for value in rgba])))
+            f.write('</material>\n\n')
         f.write('</robot>\n')
 
 def write_transmissions_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir):
@@ -720,6 +723,11 @@ def write_vscode_preview(robot_name, save_dir):
     for child in list(robot):
         if child.tag.endswith('include'):
             robot.remove(child)
+    materials_file = os.path.join(save_dir, 'urdf', 'materials.xacro')
+    if os.path.exists(materials_file):
+        materials_root = ElementTree.parse(materials_file).getroot()
+        for material in reversed(materials_root.findall('material')):
+            robot.insert(0, material)
     for mesh in robot.findall('.//mesh'):
         filename = mesh.attrib.get('filename', '')
         marker = '/meshes/'

@@ -52,6 +52,25 @@ class Component:
         self.name = name
 
 
+class Color:
+    def __init__(self, red, green, blue, opacity=255):
+        self.red = red
+        self.green = green
+        self.blue = blue
+        self.opacity = opacity
+
+
+class Appearance:
+    def __init__(self, color):
+        self.color = color
+
+
+class Body:
+    def __init__(self, color, opacity=1.0):
+        self.appearance = Appearance(color)
+        self.visibleOpacity = opacity
+
+
 class Occurrence:
     def __init__(self, component_name, full_path, bodies=None, children=None, visible=True):
         self.component = Component(component_name)
@@ -62,6 +81,7 @@ class Occurrence:
         self.childOccurrences = Collection(children or [])
         self.transform = Transform([0.0, 0.0, 0.0])
         self.transform2 = self.transform
+        self.appearance = None
 
 
 class Root:
@@ -207,6 +227,27 @@ def write_binary_stl(path, vertices):
 
 
 class ExportLogicTests(unittest.TestCase):
+    def test_occurrence_material_color_is_exported_to_preview(self):
+        occurrence = Occurrence('base_link', 'base_link', bodies=[Body(Color(51, 102, 204, 128), 0.5)])
+        rgba = Link.occurrence_rgba(occurrence, list(occurrence.bRepBodies))
+        inertials = {'base_link': {'rgba': rgba}}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, 'urdf'))
+            with open(os.path.join(tmp, 'urdf', 'sample.xacro'), 'w', encoding='utf-8') as f:
+                f.write('<robot name="sample" xmlns:xacro="http://www.ros.org/wiki/xacro">')
+                f.write('<xacro:include filename="materials.xacro"/>')
+                f.write('<link name="base_link"><visual><material name="material_base_link"/></visual></link>')
+                f.write('</robot>')
+            Write.write_materials_xacro({}, {}, inertials, 'sample_description', 'sample', tmp)
+            preview = Write.write_vscode_preview('sample', tmp)
+            with open(preview, encoding='utf-8') as f:
+                content = f.read()
+
+        self.assertEqual(rgba, [0.2, 0.4, 0.8, 0.25098])
+        self.assertIn('material_base_link', content)
+        self.assertIn('0.200000 0.400000 0.800000 0.250980', content)
+
     def test_assembly_occurrence_can_be_flattened_into_one_link(self):
         child = Occurrence('child_part', 'asm+parent:1+child:1', bodies=['child_body'])
         parent = Occurrence('parent_asm', 'asm+parent:1', children=[child])

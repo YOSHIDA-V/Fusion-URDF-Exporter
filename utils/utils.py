@@ -546,6 +546,7 @@ def copy_occs(root, target_link_names=None):
                         occurrence_name = export_name
                 return {
                     'occurrence': new_occs,
+                    'source_occurrence': occs,
                     'export_name': export_name,
                     'part_key': occurrence_part_key(occs),
                     'component_name': component_name,

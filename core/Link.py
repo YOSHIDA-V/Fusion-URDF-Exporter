@@ -6,6 +6,7 @@ Created on Sun May 12 20:11:28 2019
 """
 
 import adsk, re
+from collections import Counter
 from xml.etree.ElementTree import Element, SubElement
 from ..utils import utils
 
@@ -15,9 +16,72 @@ def _is_visible(item):
     except:
         return True
 
+DEFAULT_RGBA = [0.7, 0.7, 0.7, 1.0]
+
+
+def _color_rgba(appearance, opacity=1.0):
+    if appearance is None:
+        return None
+    color = None
+    try:
+        color = appearance.color
+    except:
+        pass
+    if color is None:
+        for property_id in ('opaque_albedo', 'metal_f0', 'transparent_color'):
+            try:
+                color_property = appearance.appearanceProperties.itemById(property_id)
+                color = color_property.value
+                if color is not None:
+                    break
+            except:
+                pass
+    if color is None:
+        return None
+    try:
+        alpha = (float(color.opacity) / 255.0) * float(opacity)
+        return [round(float(color.red) / 255.0, 6),
+                round(float(color.green) / 255.0, 6),
+                round(float(color.blue) / 255.0, 6),
+                round(max(0.0, min(1.0, alpha)), 6)]
+    except:
+        return None
+
+
+def occurrence_rgba(occurrence, bodies=None):
+    try:
+        rgba = _color_rgba(occurrence.appearance)
+        if rgba is not None:
+            return rgba
+    except:
+        pass
+
+    colors = []
+    for body in bodies or []:
+        try:
+            opacity = body.visibleOpacity
+        except:
+            opacity = 1.0
+        try:
+            rgba = _color_rgba(body.appearance, opacity)
+        except:
+            rgba = None
+        if rgba is not None:
+            colors.append(tuple(rgba))
+    if colors:
+        return list(Counter(colors).most_common(1)[0][0])
+    return list(DEFAULT_RGBA)
+
+
+def material_name(name):
+    safe = re.sub(r'[^A-Za-z0-9_-]+', '_', name)
+    return 'material_' + (safe or 'link')
+
+
 class Link:
 
-    def __init__(self, name, xyz, center_of_mass, repo, mass, inertia_tensor, mesh_file=None, mesh_offset=None):
+    def __init__(self, name, xyz, center_of_mass, repo, mass, inertia_tensor, mesh_file=None, mesh_offset=None,
+                 link_material_name=None):
         """
         Parameters
         ----------
@@ -47,6 +111,7 @@ class Link:
         self.inertia_tensor = inertia_tensor
         self.mesh_file = mesh_file if mesh_file is not None else self.name + '.stl'
         self.mesh_offset = mesh_offset if mesh_offset is not None else [0, 0, 0]
+        self.link_material_name = link_material_name or material_name(name)
         
     def make_link_xml(self):
         """
@@ -78,7 +143,7 @@ class Link:
             mesh_v = SubElement(geometry_v, 'mesh')
             mesh_v.attrib = {'filename':'package://' + self.repo + self.mesh_file,'scale':'0.001 0.001 0.001'}
             material = SubElement(visual, 'material')
-            material.attrib = {'name':'silver'}
+            material.attrib = {'name': self.link_material_name}
             
             # collision
             collision = SubElement(link, 'collision')
@@ -104,6 +169,7 @@ def _inertial_entry_from_occurrence(occs, name, source):
     (_, xx, yy, zz, xy, yz, xz) = prop.getXYZMomentsOfInertia()
     moment_inertia_world = [_ / 10000.0 for _ in [xx, yy, zz, xy, yz, xz] ] ## kg / cm^2 -> kg/m^2
     occs_dict['inertia'] = utils.origin2center_of_mass(moment_inertia_world, center_of_mass, mass)
+    occs_dict['rgba'] = occurrence_rgba(occs, list(occs.bRepBodies))
     return occs_dict
 
 def _virtual_inertial_entry(name, center_of_mass):
@@ -112,7 +178,8 @@ def _virtual_inertial_entry(name, center_of_mass):
         'source': 'virtual_empty_link',
         'mass': 0.001,
         'center_of_mass': center_of_mass,
-        'inertia': [1e-9, 1e-9, 1e-9, 0.0, 0.0, 0.0]
+        'inertia': [1e-9, 1e-9, 1e-9, 0.0, 0.0, 0.0],
+        'rgba': list(DEFAULT_RGBA)
     }
 
 def add_virtual_inertials(inertial_dict, joints_dict, target_link_names):
@@ -151,6 +218,9 @@ def make_inertial_dict(root, msg, target_link_names=None, export_entries=None):
             if target_link_names is not None and name not in target_link_names:
                 continue
             inertial_dict[name] = _inertial_entry_from_occurrence(entry['occurrence'], name, 'flattened_export_occurrence')
+            source_occurrence = entry.get('source_occurrence', entry['occurrence'])
+            source_bodies = utils.grouped_visible_bodies(source_occurrence, target_link_names)
+            inertial_dict[name]['rgba'] = occurrence_rgba(source_occurrence, source_bodies)
         return inertial_dict, msg
 
     # Get component properties.      
