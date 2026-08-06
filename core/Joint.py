@@ -305,6 +305,48 @@ def _as_built_joint_xyz(joint):
     except:
         return _standard_joint_xyz(joint)
 
+def _relative_occurrence_pose(child_occurrence, parent_occurrence):
+    try:
+        child_matrix = child_occurrence.transform.asArray()
+        parent_matrix = parent_occurrence.transform.asArray()
+        child_rotation = [
+            child_matrix[0:3], child_matrix[4:7], child_matrix[8:11],
+        ]
+        parent_rotation = [
+            parent_matrix[0:3], parent_matrix[4:7], parent_matrix[8:11],
+        ]
+        child_translation = [child_matrix[3], child_matrix[7], child_matrix[11]]
+        parent_translation = [parent_matrix[3], parent_matrix[7], parent_matrix[11]]
+
+        relative_translation = []
+        delta = [child_translation[i] - parent_translation[i] for i in range(3)]
+        for column in range(3):
+            relative_translation.append(sum(parent_rotation[row][column] * delta[row] for row in range(3)))
+
+        relative_rotation = []
+        for row in range(3):
+            relative_rotation.append([])
+            for column in range(3):
+                relative_rotation[row].append(
+                    sum(parent_rotation[index][row] * child_rotation[index][column] for index in range(3))
+                )
+
+        planar_length = math.sqrt(relative_rotation[0][0] ** 2 + relative_rotation[1][0] ** 2)
+        if planar_length > 1e-9:
+            roll = math.atan2(relative_rotation[2][1], relative_rotation[2][2])
+            pitch = math.atan2(-relative_rotation[2][0], planar_length)
+            yaw = math.atan2(relative_rotation[1][0], relative_rotation[0][0])
+        else:
+            roll = math.atan2(-relative_rotation[1][2], relative_rotation[1][1])
+            pitch = math.atan2(-relative_rotation[2][0], planar_length)
+            yaw = 0.0
+
+        xyz = [round(value / 100.0, 6) for value in relative_translation]
+        rpy = [round(value, 6) for value in (roll, pitch, yaw)]
+        return xyz, rpy
+    except:
+        return None
+
 def _joint_entry(joint, source, msg):
     occurrence_one, occurrence_two = _safe_joint_occurrences(joint)
     if occurrence_one is None or occurrence_two is None:
@@ -329,6 +371,10 @@ def _joint_entry(joint, source, msg):
         joint_dict['xyz'] = _as_built_joint_xyz(joint)
     else:
         joint_dict['xyz'] = _standard_joint_xyz(joint)
+    if joint_dict['xyz'] is None and joint_dict['type'] == 'fixed':
+        relative_pose = _relative_occurrence_pose(occurrence_one, occurrence_two)
+        if relative_pose is not None:
+            joint_dict['xyz'], joint_dict['rpy'] = relative_pose
     if joint_dict['xyz'] is None:
         msg = joint.name + " doesn't have joint origin. Please set it and run again."
         return None, msg

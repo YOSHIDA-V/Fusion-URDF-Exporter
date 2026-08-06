@@ -98,7 +98,7 @@ def is_base_link_name(name):
         leaf_name = str(name).split('+')[-1]
     except:
         return False
-    return leaf_name in ('base_link', 'base_link:1')
+    return leaf_name in ('base_link', 'base_link:1', 'base_link1')
 
 def is_base_link_occurrence(occs):
     candidates = []

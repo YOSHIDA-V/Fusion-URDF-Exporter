@@ -149,6 +149,13 @@ class FusionJoint:
         self.geometryOrOriginTwo = JointOrigin(origin)
 
 
+class MissingOriginFixedJoint(FusionJoint):
+    def __init__(self, name, occurrence_one, occurrence_two):
+        super().__init__(name, occurrence_one, occurrence_two)
+        self.geometryOrOriginOne = None
+        self.geometryOrOriginTwo = None
+
+
 class Attribute:
     def __init__(self, value):
         self.value = value
@@ -322,18 +329,20 @@ class ExportLogicTests(unittest.TestCase):
         self.assertIn('base_link', links)
 
     def test_base_link_instance_suffix_is_canonicalized(self):
-        base = Occurrence('base_link:1', 'base_link:1', visible=False)
-        child = Occurrence('arm_link', 'arm_link')
-        fusion_joint = FusionJoint('Base Instance Joint', child, base)
+        for base_name in ('base_link:1', 'base_link1'):
+            with self.subTest(base_name=base_name):
+                base = Occurrence(base_name, base_name, visible=False)
+                child = Occurrence('arm_link', 'arm_link')
+                fusion_joint = FusionJoint('Base Instance Joint', child, base)
 
-        links = utils.link_occurrence_map(Root([base, child]))
-        joints, msg = Joint.make_joints_dict(JointRoot([fusion_joint]), Joint.SUCCESS_MSG)
+                links = utils.link_occurrence_map(Root([base, child]))
+                joints, msg = Joint.make_joints_dict(JointRoot([fusion_joint]), Joint.SUCCESS_MSG)
 
-        self.assertIn('base_link', links)
-        self.assertNotIn('base_link_1', links)
-        self.assertEqual(msg, Joint.SUCCESS_MSG)
-        self.assertEqual(joints['fixed_joint_01']['parent'], 'base_link')
-        self.assertEqual(joints['fixed_joint_01']['child'], 'arm_link')
+                self.assertIn('base_link', links)
+                self.assertNotIn(utils.sanitize_link_name(base_name), links)
+                self.assertEqual(msg, Joint.SUCCESS_MSG)
+                self.assertEqual(joints['fixed_joint_01']['parent'], 'base_link')
+                self.assertEqual(joints['fixed_joint_01']['child'], 'arm_link')
 
     def test_base_link_and_base_link_instance_suffix_collision_is_rejected(self):
         base = Occurrence('base_link', 'base_link')
@@ -341,6 +350,20 @@ class ExportLogicTests(unittest.TestCase):
 
         with self.assertRaises(RuntimeError):
             utils.validate_occurrence_link_names(Root([base, base_instance]))
+
+    def test_fixed_joint_without_origin_uses_relative_occurrence_pose(self):
+        base = Occurrence('base_link1', 'base_link1')
+        child = Occurrence('arm_link', 'arm_link')
+        child.transform = Transform([100.0, 20.0, -30.0])
+        fusion_joint = MissingOriginFixedJoint('base_link1', child, base)
+
+        joints, msg = Joint.make_joints_dict(JointRoot([fusion_joint]), Joint.SUCCESS_MSG)
+
+        self.assertEqual(msg, Joint.SUCCESS_MSG)
+        self.assertEqual(joints['fixed_joint_01']['parent'], 'base_link')
+        self.assertEqual(joints['fixed_joint_01']['child'], 'arm_link')
+        self.assertEqual(joints['fixed_joint_01']['xyz'], [1.0, 0.2, -0.3])
+        self.assertEqual(joints['fixed_joint_01']['rpy'], [0.0, 0.0, 0.0])
 
     def test_reversed_revolute_joint_flips_axis_and_limits(self):
         base = Occurrence('base_link', 'base_link')
