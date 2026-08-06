@@ -63,7 +63,7 @@ def run(context):
             ui.messageBox(msg, title)
             return 0   
 
-        nonfatal_skip_reasons = set(['hidden_joint_occurrence', 'overridden_by_urdf_joint'])
+        nonfatal_skip_reasons = set(['hidden_joint_occurrence', 'overridden_by_urdf_joint', 'same_link_joint'])
         fatal_skipped = [
             joint for joint in all_joints_dict
             if all_joints_dict[joint].get('skip_from_urdf', False)

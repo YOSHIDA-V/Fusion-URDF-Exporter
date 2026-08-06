@@ -61,6 +61,7 @@ class Occurrence:
         self.bRepBodies = Collection(bodies or [])
         self.childOccurrences = Collection(children or [])
         self.transform = Transform([0.0, 0.0, 0.0])
+        self.transform2 = self.transform
 
 
 class Root:
@@ -355,6 +356,7 @@ class ExportLogicTests(unittest.TestCase):
         base = Occurrence('base_link1', 'base_link1')
         child = Occurrence('arm_link', 'arm_link')
         child.transform = Transform([100.0, 20.0, -30.0])
+        child.transform2 = child.transform
         fusion_joint = MissingOriginFixedJoint('base_link1', child, base)
 
         joints, msg = Joint.make_joints_dict(JointRoot([fusion_joint]), Joint.SUCCESS_MSG)
@@ -364,6 +366,31 @@ class ExportLogicTests(unittest.TestCase):
         self.assertEqual(joints['fixed_joint_01']['child'], 'arm_link')
         self.assertEqual(joints['fixed_joint_01']['xyz'], [1.0, 0.2, -0.3])
         self.assertEqual(joints['fixed_joint_01']['rpy'], [0.0, 0.0, 0.0])
+
+    def test_fixed_joint_without_origin_prefers_transform2(self):
+        base = Occurrence('base_link1', 'base_link1')
+        child = Occurrence('arm_link', 'arm_link')
+        base.transform = None
+        child.transform = None
+        base.transform2 = Transform([0.0, 0.0, 0.0])
+        child.transform2 = Transform([25.0, -50.0, 75.0])
+        fusion_joint = MissingOriginFixedJoint('base_link1', child, base)
+
+        joints, msg = Joint.make_joints_dict(JointRoot([fusion_joint]), Joint.SUCCESS_MSG)
+
+        self.assertEqual(msg, Joint.SUCCESS_MSG)
+        self.assertEqual(joints['fixed_joint_01']['xyz'], [0.25, -0.5, 0.75])
+
+    def test_same_link_joint_without_origin_is_ignored(self):
+        base = Occurrence('base_link', 'base_link')
+        base_instance = Occurrence('base_link1', 'base_link1')
+        fusion_joint = MissingOriginFixedJoint('base_link1', base_instance, base)
+
+        joints, msg = Joint.make_joints_dict(JointRoot([fusion_joint]), Joint.SUCCESS_MSG)
+
+        self.assertEqual(msg, Joint.SUCCESS_MSG)
+        self.assertIn('skipped_joint_01', joints)
+        self.assertEqual(joints['skipped_joint_01']['skip_reason'], 'same_link_joint')
 
     def test_reversed_revolute_joint_flips_axis_and_limits(self):
         base = Occurrence('base_link', 'base_link')

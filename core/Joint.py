@@ -305,10 +305,23 @@ def _as_built_joint_xyz(joint):
     except:
         return _standard_joint_xyz(joint)
 
+def _occurrence_transform_array(occurrence):
+    for attribute in ('transform2', 'transform'):
+        try:
+            transform = getattr(occurrence, attribute)
+            data = transform.asArray()
+            if data is not None and len(data) >= 12:
+                return data
+        except:
+            pass
+    return None
+
 def _relative_occurrence_pose(child_occurrence, parent_occurrence):
     try:
-        child_matrix = child_occurrence.transform.asArray()
-        parent_matrix = parent_occurrence.transform.asArray()
+        child_matrix = _occurrence_transform_array(child_occurrence)
+        parent_matrix = _occurrence_transform_array(parent_occurrence)
+        if child_matrix is None or parent_matrix is None:
+            return None
         child_rotation = [
             child_matrix[0:3], child_matrix[4:7], child_matrix[8:11],
         ]
@@ -367,6 +380,14 @@ def _joint_entry(joint, source, msg):
     joint_dict['auto_swapped'] = False
     joint_dict['rpy'] = [0.0, 0.0, 0.0]
 
+    if joint_dict['parent'] == joint_dict['child']:
+        skipped = _skipped_joint_entry(joint, source, 'same_link_joint')
+        skipped['original_parent'] = joint_dict['original_parent']
+        skipped['original_child'] = joint_dict['original_child']
+        skipped['parent'] = joint_dict['parent']
+        skipped['child'] = joint_dict['child']
+        return skipped, msg
+
     if source == 'as_built':
         joint_dict['xyz'] = _as_built_joint_xyz(joint)
     else:
@@ -376,7 +397,12 @@ def _joint_entry(joint, source, msg):
         if relative_pose is not None:
             joint_dict['xyz'], joint_dict['rpy'] = relative_pose
     if joint_dict['xyz'] is None:
-        msg = joint.name + " doesn't have joint origin. Please set it and run again."
+        msg = (
+            joint.name + " doesn't have joint origin. Please set it and run again.\n\n"
+            "Type: " + str(joint_dict.get('type', 'unknown')) + "\n"
+            "Parent: " + str(joint_dict.get('parent', 'unknown')) + "\n"
+            "Child: " + str(joint_dict.get('child', 'unknown'))
+        )
         return None, msg
 
     return joint_dict, msg
