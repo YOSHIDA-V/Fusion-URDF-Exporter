@@ -321,6 +321,27 @@ class ExportLogicTests(unittest.TestCase):
 
         self.assertIn('base_link', links)
 
+    def test_base_link_instance_suffix_is_canonicalized(self):
+        base = Occurrence('base_link:1', 'base_link:1', visible=False)
+        child = Occurrence('arm_link', 'arm_link')
+        fusion_joint = FusionJoint('Base Instance Joint', child, base)
+
+        links = utils.link_occurrence_map(Root([base, child]))
+        joints, msg = Joint.make_joints_dict(JointRoot([fusion_joint]), Joint.SUCCESS_MSG)
+
+        self.assertIn('base_link', links)
+        self.assertNotIn('base_link_1', links)
+        self.assertEqual(msg, Joint.SUCCESS_MSG)
+        self.assertEqual(joints['fixed_joint_01']['parent'], 'base_link')
+        self.assertEqual(joints['fixed_joint_01']['child'], 'arm_link')
+
+    def test_base_link_and_base_link_instance_suffix_collision_is_rejected(self):
+        base = Occurrence('base_link', 'base_link')
+        base_instance = Occurrence('base_link:1', 'base_link:1')
+
+        with self.assertRaises(RuntimeError):
+            utils.validate_occurrence_link_names(Root([base, base_instance]))
+
     def test_reversed_revolute_joint_flips_axis_and_limits(self):
         base = Occurrence('base_link', 'base_link')
         arm = Occurrence('arm_link', 'arm_link')

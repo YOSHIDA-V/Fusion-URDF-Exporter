@@ -93,12 +93,29 @@ def mesh_link_name(name):
 def sanitize_link_name(name):
     return re.sub('[^0-9A-Za-z_-]', '_', name).strip('_')
 
-def occurrence_link_name(occs):
+def is_base_link_name(name):
     try:
-        if occs.component.name == 'base_link':
-            return 'base_link'
+        leaf_name = str(name).split('+')[-1]
+    except:
+        return False
+    return leaf_name in ('base_link', 'base_link:1')
+
+def is_base_link_occurrence(occs):
+    candidates = []
+    try:
+        candidates.append(occs.component.name)
     except:
         pass
+    for attribute in ('name', 'fullPathName'):
+        try:
+            candidates.append(getattr(occs, attribute))
+        except:
+            pass
+    return any(is_base_link_name(name) for name in candidates)
+
+def occurrence_link_name(occs):
+    if is_base_link_occurrence(occs):
+        return 'base_link'
     try:
         name = occs.fullPathName
         if name:
@@ -112,11 +129,8 @@ def occurrence_link_name(occs):
     name = sanitize_link_name(name)
     if name:
         return name
-    try:
-        if occs.component.name == 'base_link':
-            return 'base_link'
-    except:
-        pass
+    if is_base_link_occurrence(occs):
+        return 'base_link'
     try:
         return sanitize_link_name(occs.component.name)
     except:
@@ -129,10 +143,7 @@ def link_occurrence_map(root):
     except:
         all_occs = []
     for occs in all_occs:
-        try:
-            is_base_link = occs.component.name == 'base_link'
-        except:
-            is_base_link = False
+        is_base_link = is_base_link_occurrence(occs)
         if not is_base_link and not _is_exportable_occurrence(occs):
             continue
         link_name = occurrence_link_name(occs)
@@ -148,10 +159,7 @@ def validate_occurrence_link_names(root):
     except:
         all_occs = []
     for occs in all_occs:
-        try:
-            is_base_link = occs.component.name == 'base_link'
-        except:
-            is_base_link = False
+        is_base_link = is_base_link_occurrence(occs)
         if not is_base_link and not _is_exportable_occurrence(occs):
             continue
         link_name = occurrence_link_name(occs)

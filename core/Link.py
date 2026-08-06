@@ -162,7 +162,7 @@ def make_inertial_dict(root, msg, target_link_names=None, export_entries=None):
         name = utils.occurrence_link_name(occs)
         if target_link_names is not None and name not in target_link_names:
             continue
-        if occs.component.name == 'base_link':
+        if utils.is_base_link_occurrence(occs):
             inertial_dict['base_link'] = _inertial_entry_from_occurrence(occs, 'base_link', 'fusion_occurrence')
         else:
             inertial_dict[name] = _inertial_entry_from_occurrence(occs, name, 'fusion_occurrence')
