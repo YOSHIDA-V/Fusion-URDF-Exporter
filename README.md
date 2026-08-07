@@ -40,7 +40,9 @@ Fusionのコンポーネントとジョイントから、Xacro、STLメッシュ
 │  └─ materials.xacro     # マテリアル定義
 ├─ launch/
 │  └─ display.launch.py   # ROS 2表示用launch
-├─ vscode_preview/         # VS Code URDF Preview用
+├─ viewer/
+│  ├─ open_model_viewer.html  # 自動表示用Web Viewer
+│  └─ THIRD_PARTY_LICENSE.txt
 ├─ CMakeLists.txt
 └─ package.xml
 ```
@@ -56,7 +58,7 @@ Fusionのコンポーネントとジョイントから、Xacro、STLメッシュ
 | 軸・制限補正 | 親子反転時に軸方向と上下限を合わせて補正 |
 | メッシュ再利用 | 同一部品・同一形状と確認できたSTLを共有 |
 | 完了時検証 | Link到達性、Joint、Xacro、STLパス、メッシュ欠落を検査 |
-| プレビュー | ROS 2 RVizとVS Code URDF Preview向けファイルを生成 |
+| プレビュー | エクスポート後、URDFとSTLを内包したWeb Viewerを既定ブラウザで自動表示 |
 
 ## 対応環境
 
@@ -108,8 +110,10 @@ Fusionのコンポーネントとジョイントから、Xacro、STLメッシュ
 3. 出力先フォルダを選択します。
 4. `<robot_name>_description`フォルダが生成されるまで待ちます。
 5. `Successfully create URDF file`が表示されたことを確認します。
+6. 自動的に開くWeb ViewerでモデルとJointスライダーを確認します。追加のローカルサーバーやPython環境は不要です。
 
 エラーが表示された場合、途中生成物を正常な出力として使用せず、メッセージに示されたコンポーネントまたはJointをFusion側で修正して再実行してください。
+成功時の出力には診断用CSV/TXTを残しません。エラー時のみ原因確認用のレポートを出力します。
 
 ## ROS 2で表示
 

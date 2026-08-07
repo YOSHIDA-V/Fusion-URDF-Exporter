@@ -160,7 +160,7 @@ def run(context):
             if os.path.exists(legacy_path):
                 os.remove(legacy_path)
         Write.write_display_launch(package_name, robot_name, save_dir)
-        Write.write_vscode_preview(robot_name, save_dir)
+        viewer_html = Write.write_web_viewer_urdf(robot_name, save_dir)
         utils.cleanup_reused_meshes(save_dir, mesh_reuse_info)
 
         validation = validate_export_package.validate(save_dir)
@@ -169,7 +169,10 @@ def run(context):
                 'Exported package validation failed:\n{}'
                 .format('\n'.join(validation['errors']))
             )
-        
+
+        utils.remove_generated_reports(save_dir)
+        viewer_url = Write.open_web_viewer(viewer_html)
+        msg += '\n\nModel viewer opened:\n{}'.format(viewer_url)
         ui.messageBox(msg, title)
     except RuntimeError as e:
         if ui:

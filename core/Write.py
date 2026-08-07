@@ -5,7 +5,7 @@ Created on Sun May 12 20:46:26 2019
 @author: syuntoku
 """
 
-import adsk, csv, os
+import adsk, base64, csv, html, os, pathlib, shutil, webbrowser
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from . import Link, Joint
@@ -702,20 +702,42 @@ def _safe_xml_name(name):
         safe = 'link_' + safe
     return safe
 
-def write_vscode_preview(robot_name, save_dir):
+def open_web_viewer(viewer_file):
+    """Open the self-contained gkjohnson URDF viewer in the default browser."""
+    viewer_url = pathlib.Path(viewer_file).resolve().as_uri()
+    webbrowser.open(viewer_url)
+    return viewer_url
+
+
+def _remove_legacy_vscode_preview(save_dir):
+    for filename in ('open_vscode_preview.cmd', 'open_model_viewer.cmd'):
+        legacy_file = os.path.join(save_dir, filename)
+        if os.path.isfile(legacy_file):
+            os.remove(legacy_file)
+    for directory in ('.vscode', 'vscode_preview'):
+        path = os.path.join(save_dir, directory)
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+
+
+def write_web_viewer_urdf(robot_name, save_dir):
     """
-    Write a VS Code friendly URDF preview without ROS package lookup.
+    Write a standalone URDF for the gkjohnson browser viewer.
     """
-    preview_dir = os.path.join(save_dir, 'vscode_preview')
-    vscode_dir = os.path.join(save_dir, '.vscode')
-    os.makedirs(preview_dir, exist_ok=True)
-    os.makedirs(vscode_dir, exist_ok=True)
-    stale_preview_file = os.path.join(preview_dir, robot_name + '.all_meshes_preview.urdf')
-    if os.path.exists(stale_preview_file):
-        try:
-            os.remove(stale_preview_file)
-        except:
-            pass
+    _remove_legacy_vscode_preview(save_dir)
+    viewer_dir = os.path.join(save_dir, 'viewer')
+    os.makedirs(viewer_dir, exist_ok=True)
+    for generated_name in ('index.html', 'serve_model.py'):
+        generated_path = os.path.join(viewer_dir, generated_name)
+        if os.path.isfile(generated_path):
+            os.remove(generated_path)
+    assets_dir = os.path.join(viewer_dir, 'assets')
+    if os.path.isdir(assets_dir):
+        shutil.rmtree(assets_dir)
+
+    for name in os.listdir(viewer_dir):
+        if name.lower().endswith('.urdf'):
+            os.remove(os.path.join(viewer_dir, name))
 
     xacro_file = os.path.join(save_dir, 'urdf', robot_name + '.xacro')
     tree = ElementTree.parse(xacro_file)
@@ -734,38 +756,82 @@ def write_vscode_preview(robot_name, save_dir):
         if marker in filename:
             mesh.attrib['filename'] = '../meshes/' + filename.split(marker, 1)[1]
 
-    preview_file = os.path.join(preview_dir, robot_name + '.preview.urdf')
-    with open(preview_file, mode='w', encoding='utf-8') as f:
-        f.write('<?xml version="1.0" ?>\n')
-        f.write("\n".join(utils.prettify(robot).split("\n")[1:]))
+    for mesh in robot.findall('.//mesh'):
+        filename = mesh.attrib.get('filename', '')
+        if not filename.startswith('../meshes/'):
+            continue
+        mesh_path = os.path.join(save_dir, 'meshes', filename[len('../meshes/'):])
+        if not os.path.isfile(mesh_path):
+            continue
+        extension = os.path.splitext(mesh_path)[1].lower().lstrip('.') or 'stl'
+        with open(mesh_path, 'rb') as f:
+            encoded_mesh = base64.b64encode(f.read()).decode('ascii')
+        mesh.attrib['filename'] = 'data:model/{};base64,{}#mesh.{}'.format(
+            extension, encoded_mesh, extension)
 
-    with open(os.path.join(vscode_dir, 'extensions.json'), mode='w', encoding='utf-8') as f:
-        f.write('{\n  "recommendations": [\n    "morningfrog.urdf-visualizer"\n  ]\n}\n')
+    embedded_urdf = '<?xml version="1.0" ?>\n' + "\n".join(
+        utils.prettify(robot).split("\n")[1:])
+    encoded_urdf = base64.b64encode(embedded_urdf.encode('utf-8')).decode('ascii')
+    resource_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'web_viewer')
+    with open(os.path.join(resource_dir, 'viewer.css'), encoding='utf-8') as f:
+        viewer_css = f.read()
+    with open(os.path.join(resource_dir, 'viewer.bundle.js'), encoding='utf-8') as f:
+        viewer_script = f.read()
+    shutil.copy2(
+        os.path.join(resource_dir, 'THIRD_PARTY_LICENSE.txt'),
+        os.path.join(viewer_dir, 'THIRD_PARTY_LICENSE.txt'))
+    model_name = html.escape(robot_name, quote=True)
+    model_url = 'data:application/xml;base64,' + encoded_urdf
+    viewer_html = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{name} URDF Viewer</title>
+  <style>{css}</style>
+</head>
+<body tabindex="0">
+  <div id="menu">
+    <ul id="urdf-options"><li urdf="{model_url}" color="#263238">{name}</li></ul>
+    <div id="controls" class="hidden">
+      <div id="toggle-controls"></div>
+      <div id="ignore-joint-limits" class="toggle">Ignore Joint Limits</div>
+      <div id="hide-fixed" class="toggle">Hide Fixed Joints</div>
+      <div id="radians-toggle" class="toggle">Use Radians</div>
+      <div id="autocenter-toggle" class="toggle checked">Autocenter</div>
+      <div id="collision-toggle" class="toggle">Show Collision</div>
+      <div id="do-animate" class="toggle">Animate Joints</div>
+      <label>Up Axis
+        <select id="up-select">
+          <option value="+X">+X</option><option value="-X">-X</option>
+          <option value="+Y">+Y</option><option value="-Y">-Y</option>
+          <option value="+Z" selected>+Z</option><option value="-Z">-Z</option>
+        </select>
+      </label>
+      <ul></ul>
+    </div>
+  </div>
+  <urdf-viewer up="+Z" display-shadow tabindex="0"></urdf-viewer>
+  <script>{script}</script>
+  <script>
+    var embeddedViewer = document.querySelector('urdf-viewer');
+    embeddedViewer.urlModifierFunc = function (url) {{
+      var dataIndex = url.lastIndexOf('data:');
+      return dataIndex >= 0 ? url.substring(dataIndex) : url;
+    }};
+    document.dispatchEvent(new Event('WebComponentsReady'));
+    window.setTimeout(function () {{
+      embeddedViewer.up = '+Z';
+      document.getElementById('up-select').value = '+Z';
+    }}, 0);
+  </script>
+</body>
+</html>
+'''.format(name=model_name, css=viewer_css, model_url=model_url, script=viewer_script)
+    standalone_viewer = os.path.join(viewer_dir, 'open_model_viewer.html')
+    with open(standalone_viewer, mode='w', encoding='utf-8') as f:
+        f.write(viewer_html)
 
-    with open(os.path.join(vscode_dir, 'settings.json'), mode='w', encoding='utf-8') as f:
-        f.write('{\n')
-        f.write('  "urdf-visualizer.renderOnSave": true,\n')
-        f.write('  "urdf-visualizer.cacheMesh": true,\n')
-        f.write('  "urdf-visualizer.default.showVisual": true,\n')
-        f.write('  "urdf-visualizer.default.showCollision": false,\n')
-        f.write('  "urdf-visualizer.default.showInertia": false,\n')
-        f.write('  "urdf-visualizer.default.showWorldFrame": true,\n')
-        f.write('  "urdf-visualizer.default.showJointFrames": false,\n')
-        f.write('  "urdf-visualizer.backgroundColor": "#202124",\n')
-        f.write('  "urdf-visualizer.showTips": false\n')
-        f.write('}\n')
-
-    with open(os.path.join(save_dir, 'open_vscode_preview.cmd'), mode='w', encoding='utf-8') as f:
-        f.write('@echo off\n')
-        f.write('cd /d "%~dp0"\n')
-        f.write('code --reuse-window "%~dp0" "%~dp0vscode_preview\\' + robot_name + '.preview.urdf"\n')
-
-    with open(os.path.join(preview_dir, 'README.md'), mode='w', encoding='utf-8') as f:
-        f.write('# VS Code URDF Preview\n\n')
-        f.write('Open `' + robot_name + '.preview.urdf`.\n\n')
-        f.write('Run `Ctrl+Shift+P` -> `URDF Visualizer: Preview URDF/Xacro`.\n\n')
-        f.write('This preview shows the exported xacro tree and does not require ROS, rospack, or xacro.\n')
-
-    return preview_file
+    return standalone_viewer
 
 

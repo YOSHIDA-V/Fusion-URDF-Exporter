@@ -1,3 +1,4 @@
+import base64
 import csv
 import importlib.util
 import os
@@ -227,7 +228,7 @@ def write_binary_stl(path, vertices):
 
 
 class ExportLogicTests(unittest.TestCase):
-    def test_occurrence_material_color_is_exported_to_preview(self):
+    def test_occurrence_material_color_is_exported_to_web_viewer_urdf(self):
         occurrence = Occurrence('base_link', 'base_link', bodies=[Body(Color(51, 102, 204, 128), 0.5)])
         rgba = Link.occurrence_rgba(occurrence, list(occurrence.bRepBodies))
         inertials = {'base_link': {'rgba': rgba}}
@@ -240,13 +241,95 @@ class ExportLogicTests(unittest.TestCase):
                 f.write('<link name="base_link"><visual><material name="material_base_link"/></visual></link>')
                 f.write('</robot>')
             Write.write_materials_xacro({}, {}, inertials, 'sample_description', 'sample', tmp)
-            preview = Write.write_vscode_preview('sample', tmp)
-            with open(preview, encoding='utf-8') as f:
+            viewer_html = Write.write_web_viewer_urdf('sample', tmp)
+            with open(viewer_html, encoding='utf-8') as f:
                 content = f.read()
+            marker = 'urdf="data:application/xml;base64,'
+            encoded_urdf = content.split(marker, 1)[1].split('"', 1)[0]
+            content = base64.b64decode(encoded_urdf).decode('utf-8')
 
         self.assertEqual(rgba, [0.2, 0.4, 0.8, 0.25098])
         self.assertIn('material_base_link', content)
         self.assertIn('0.200000 0.400000 0.800000 0.250980', content)
+
+    def test_web_viewer_export_removes_legacy_vscode_preview(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, 'urdf'))
+            os.makedirs(os.path.join(tmp, '.vscode'))
+            os.makedirs(os.path.join(tmp, 'vscode_preview'))
+            os.makedirs(os.path.join(tmp, 'viewer'))
+            open(os.path.join(tmp, 'open_vscode_preview.cmd'), 'w').close()
+            open(os.path.join(tmp, 'open_model_viewer.cmd'), 'w').close()
+            open(os.path.join(tmp, 'viewer', 'serve_model.py'), 'w').close()
+            with open(os.path.join(tmp, 'urdf', 'sample.xacro'), 'w', encoding='utf-8') as f:
+                f.write('<robot name="sample"/>')
+
+            viewer_html = Write.write_web_viewer_urdf('sample', tmp)
+
+            self.assertTrue(os.path.isfile(viewer_html))
+            self.assertFalse(any(name.lower().endswith('.urdf') for name in os.listdir(os.path.join(tmp, 'viewer'))))
+            self.assertFalse(os.path.exists(os.path.join(tmp, 'viewer', 'index.html')))
+            self.assertFalse(os.path.exists(os.path.join(tmp, 'viewer', 'assets')))
+            self.assertTrue(os.path.isfile(os.path.join(tmp, 'viewer', 'THIRD_PARTY_LICENSE.txt')))
+            self.assertFalse(os.path.exists(os.path.join(tmp, 'viewer', 'serve_model.py')))
+            self.assertFalse(os.path.exists(os.path.join(tmp, 'open_model_viewer.cmd')))
+            self.assertFalse(os.path.exists(os.path.join(tmp, '.vscode')))
+            self.assertFalse(os.path.exists(os.path.join(tmp, 'vscode_preview')))
+            self.assertFalse(os.path.exists(os.path.join(tmp, 'open_vscode_preview.cmd')))
+
+    def test_web_viewer_opens_self_contained_file_without_local_server(self):
+        opened_urls = []
+        original_open = Write.webbrowser.open
+        Write.webbrowser.open = opened_urls.append
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                viewer_file = os.path.join(tmp, 'viewer.html')
+                open(viewer_file, 'w').close()
+                url = Write.open_web_viewer(viewer_file)
+        finally:
+            Write.webbrowser.open = original_open
+
+        self.assertTrue(url.startswith('file:///'))
+        self.assertEqual(opened_urls, [url])
+
+    def test_web_viewer_embeds_urdf_and_mesh_data(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, 'urdf'))
+            os.makedirs(os.path.join(tmp, 'meshes'))
+            mesh_bytes = b'solid embedded\nendsolid embedded\n'
+            with open(os.path.join(tmp, 'meshes', 'base.stl'), 'wb') as f:
+                f.write(mesh_bytes)
+            with open(os.path.join(tmp, 'urdf', 'sample.xacro'), 'w', encoding='utf-8') as f:
+                f.write('<robot name="sample"><link name="base_link"><visual><geometry>')
+                f.write('<mesh filename="package://sample_description/meshes/base.stl"/>')
+                f.write('</geometry></visual></link></robot>')
+
+            viewer_html = Write.write_web_viewer_urdf('sample', tmp)
+            with open(viewer_html, encoding='utf-8') as f:
+                content = f.read()
+
+            marker = 'urdf="data:application/xml;base64,'
+            encoded_urdf = content.split(marker, 1)[1].split('"', 1)[0]
+            embedded_urdf = base64.b64decode(encoded_urdf).decode('utf-8')
+            self.assertIn('data:model/stl;base64,', embedded_urdf)
+            self.assertIn(base64.b64encode(mesh_bytes).decode('ascii'), embedded_urdf)
+            self.assertNotIn('package://', embedded_urdf)
+            self.assertIn("url.lastIndexOf('data:')", content)
+
+    def test_success_cleanup_removes_all_generated_reports(self):
+        report_names = [
+            'joint_tree_report.txt',
+            'joint_tree_edges.csv',
+            'joint_tree_links.csv',
+            'mesh_reuse_report.csv',
+            'extra_fixed_links.csv',
+            'export_structure_report.csv',
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in report_names:
+                open(os.path.join(tmp, name), 'w').close()
+            utils.remove_generated_reports(tmp)
+            self.assertEqual([name for name in report_names if os.path.exists(os.path.join(tmp, name))], [])
 
     def test_assembly_occurrence_can_be_flattened_into_one_link(self):
         child = Occurrence('child_part', 'asm+parent:1+child:1', bodies=['child_body'])
