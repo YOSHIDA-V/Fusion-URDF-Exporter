@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 220" role="img" aria-labelledby="title desc">
+  <title id="title">Fusion URDF Exporter</title>
+  <desc id="desc">CAD assembly, robot joint tree, and export arrow logo mark</desc>
+  <g transform="translate(14 10)">
+    <path fill="#263238" d="M18 68 88 12l70 56-70 56z"/>
+    <path fill="#e76f00" d="m18 108 70-56 70 56-70 56z"/>
+    <path fill="none" stroke="#fff" stroke-width="8" d="m18 88 70 56 70-56"/>
+    <g fill="none" stroke="#00a6c8" stroke-linecap="round" stroke-linejoin="round" stroke-width="13">
+      <path d="m112 42 30 58-25 58M142 100h42"/>
+      <path d="m178 78 27 22-27 22"/>
+    </g>
+    <g fill="#fff" stroke="#00a6c8" stroke-width="10">
+      <circle cx="112" cy="42" r="14"/>
+      <circle cx="142" cy="100" r="14"/>
+      <circle cx="117" cy="158" r="14"/>
+    </g>
+  </g>
+  <text x="245" y="140" fill="#20272d" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="700" letter-spacing="0">Fusion URDF Exporter</text>
+</svg>
