@@ -1,6 +1,7 @@
 import base64
 import ast
 import csv
+import hashlib
 import json
 import importlib.util
 import os
@@ -254,17 +255,39 @@ class ExportLogicTests(unittest.TestCase):
         )
         addin_module = importlib.util.module_from_spec(addin_spec)
         addin_spec.loader.exec_module(addin_module)
-        forwarded_contexts = []
+        forwarded_calls = []
         original_run = addin_module.exporter.run
         try:
-            addin_module.exporter.run = lambda context: forwarded_contexts.append(context)
+            addin_module.exporter.run = lambda context, entrypoint_file=None: forwarded_calls.append(
+                (context, entrypoint_file)
+            )
             context = object()
             addin_module.run(context)
         finally:
             addin_module.exporter.run = original_run
 
-        self.assertEqual(forwarded_contexts, [context])
+        self.assertEqual(forwarded_calls, [(context, str(entrypoint_path))])
         self.assertIsNone(addin_module.stop(context))
+
+    def test_runtime_status_identifies_loaded_files_and_phase(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            entrypoint = os.path.join(tmp, 'RobovieZ_URDF_Exporter_AddIn.py')
+            exporter = os.path.join(tmp, 'URDF_Exporter.py')
+            with open(entrypoint, 'w', encoding='utf-8') as f:
+                f.write('entrypoint')
+            with open(exporter, 'w', encoding='utf-8') as f:
+                f.write('exporter')
+
+            identity = utils.make_runtime_identity(entrypoint, [exporter])
+            status_path = utils.write_runtime_status(tmp, identity, 'joint_preflight')
+            with open(status_path, encoding='utf-8') as f:
+                status = json.load(f)
+
+        self.assertEqual(status['phase'], 'joint_preflight')
+        self.assertEqual(status['entrypoint'], os.path.abspath(entrypoint))
+        self.assertEqual(status['loaded_files'][os.path.abspath(exporter)]['sha256'], hashlib.sha256(b'exporter').hexdigest())
+        self.assertTrue(status['run_id'].startswith('FUE-RUNTIME-'))
+        self.assertIsInstance(status['pid'], int)
 
     def test_occurrence_material_color_is_exported_to_web_viewer_urdf(self):
         occurrence = Occurrence('base_link', 'base_link', bodies=[Body(Color(51, 102, 204, 128), 0.5)])
