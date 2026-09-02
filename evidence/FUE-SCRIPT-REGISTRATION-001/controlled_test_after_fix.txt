@@ -1,0 +1,9 @@
+Run ID: `FUE-SCRIPT-CONTROLLED-20260903-0318`
+
+Results:
+
+- `RobovieZ_URDF_Exporter.py` Python compilation: exit 0.
+- Script registration focused test: 1 passed, exit 0.
+- Full suite: 42 passed in 1.040 seconds, exit 0.
+
+Controlled scope: proves source wrapper/manifest consistency and delegation to the maintained exporter. Fusion discovery and real export remain target checks.

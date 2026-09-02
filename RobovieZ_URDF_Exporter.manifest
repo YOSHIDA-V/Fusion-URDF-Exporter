@@ -1,0 +1,10 @@
+{
+    "autodeskProduct": "Fusion360",
+    "type": "script",
+    "author": "YOSHIDA-V",
+    "description": {
+        "": "Export Robovie-Z top-level link components as URDF and STL files"
+    },
+    "supportedOS": "windows|mac",
+    "editEnabled": true
+}
