@@ -133,8 +133,8 @@ class Joint:
 
         self.tran_xml = "\n".join(utils.prettify(tran).split("\n")[1:])
 
-def _clean_occurrence_name(occ):
-    return utils.occurrence_link_name(occ)
+def _clean_occurrence_name(root, occ):
+    return utils.joint_endpoint_link_name(root, occ)
 
 def _skipped_joint_entry(joint, source, reason):
     return {
@@ -364,7 +364,7 @@ def _relative_occurrence_pose(child_occurrence, parent_occurrence):
     except:
         return None
 
-def _joint_entry(joint, source, msg):
+def _joint_entry(root, joint, source, msg):
     occurrence_one, occurrence_two = _safe_joint_occurrences(joint)
     if occurrence_one is None or occurrence_two is None:
         return _skipped_joint_entry(joint, source, 'invalid_joint_occurrence'), msg
@@ -377,8 +377,8 @@ def _joint_entry(joint, source, msg):
         return _skipped_joint_entry(joint, source, 'unsupported_fusion_joint_type'), msg
 
     joint_dict['source'] = source
-    joint_dict['original_parent'] = _clean_occurrence_name(occurrence_two)
-    joint_dict['original_child'] = _clean_occurrence_name(occurrence_one)
+    joint_dict['original_parent'] = _clean_occurrence_name(root, occurrence_two)
+    joint_dict['original_child'] = _clean_occurrence_name(root, occurrence_one)
     joint_dict['parent'] = joint_dict['original_parent']
     joint_dict['child'] = joint_dict['original_child']
     joint_dict['auto_swapped'] = False
@@ -516,7 +516,7 @@ def make_joints_dict(root, msg):
 
     for joint in _all_fusion_joints(root):
         source = 'as_built' if type(joint) == adsk.fusion.AsBuiltJoint else 'joint'
-        joint_dict, msg = _joint_entry(joint, source, msg)
+        joint_dict, msg = _joint_entry(root, joint, source, msg)
         if msg != SUCCESS_MSG:
             break
         if joint_dict is None:

@@ -136,6 +136,44 @@ def occurrence_link_name(occs):
     except:
         return 'base_link'
 
+def joint_endpoint_link_name(root, occs):
+    """Return the top-level link occurrence that contains a Joint endpoint.
+
+    Fusion Joints can reference a nested servo or horn occurrence even when the
+    URDF link is represented by its enclosing top-level assembly occurrence.
+    Keep the nested occurrence as a fallback for designs that do not expose a
+    matching top-level occurrence.
+    """
+    try:
+        endpoint_path = str(occs.fullPathName)
+    except:
+        endpoint_path = ''
+
+    try:
+        top_occurrences = [root.occurrences.item(i) for i in range(root.occurrences.count)]
+    except:
+        top_occurrences = []
+
+    containing_occurrence = None
+    containing_path = ''
+    for top_occurrence in top_occurrences:
+        try:
+            top_path = str(top_occurrence.fullPathName)
+        except:
+            top_path = ''
+        if not top_path:
+            continue
+        if (
+            occs is top_occurrence
+            or endpoint_path == top_path
+            or endpoint_path.startswith(top_path + '+')
+        ) and len(top_path) > len(containing_path):
+            containing_occurrence = top_occurrence
+            containing_path = top_path
+
+    resolved_occurrence = containing_occurrence if containing_occurrence is not None else occs
+    return occurrence_link_name(resolved_occurrence)
+
 def link_occurrence_map(root):
     link_map = {}
     try:
