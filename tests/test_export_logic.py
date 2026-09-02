@@ -466,6 +466,33 @@ class ExportLogicTests(unittest.TestCase):
         )
         self.assertFalse(joints['fixed_joint_01']['skip_from_urdf'])
 
+    def test_roboviez_top_level_components_define_link_names_and_preflight(self):
+        base_servo = Occurrence(
+            'P_RS30X_SIMPLE_PLUS',
+            'base_link:1+P_RS30X_SIMPLE_PLUS:8',
+        )
+        neck_horn = Occurrence(
+            'P_RS30X_SIMPLE_HORN',
+            'neck_link:1+P_RS30X_SIMPLE_HORN:1',
+        )
+        base_link = Occurrence('base_link', 'base_link:1', children=[base_servo])
+        neck_link = Occurrence('neck_link', 'neck_link:1', children=[neck_horn])
+        fusion_joint = FusionJoint('Nested Fusion Joint', neck_horn, base_servo)
+        root = Root([base_link, neck_link], joints=[fusion_joint])
+
+        # Fusion may expose leaf occurrences through allOccurrences while the
+        # link-defining assembly occurrences remain available through occurrences.
+        root.allOccurrences = [base_servo, neck_horn]
+
+        links = utils.link_occurrence_map(root)
+        joints, msg = Joint.make_joints_dict(root, Joint.SUCCESS_MSG)
+
+        self.assertEqual(msg, Joint.SUCCESS_MSG)
+        self.assertIn('base_link', links)
+        self.assertIn('neck_link', links)
+        self.assertEqual(joints['fixed_joint_01']['parent'], 'base_link')
+        self.assertEqual(joints['fixed_joint_01']['child'], 'neck_link')
+
     def test_hidden_occurrence_keeps_joint_structure(self):
         base = Occurrence('base_link', 'base_link', visible=False)
         child = Occurrence('frame_link', 'frame_link', visible=False)

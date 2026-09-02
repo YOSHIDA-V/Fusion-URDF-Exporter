@@ -1,0 +1,11 @@
+Run ID: FUE-STL-EXPORT-001-REPRO-20260903-01
+Source commit before evidence commit: 3f6fd7ce4d23e78decccaeb11b4176e78304b62b
+Command: py -3 -m unittest discover -s tests -p test_export_logic.py -k roboviez_top_level_components_define_link_names_and_preflight -v
+Exit code: 1
+
+test_roboviez_top_level_components_define_link_names_and_preflight (test_export_logic.ExportLogicTests.test_roboviez_top_level_components_define_link_names_and_preflight) ... FAIL
+
+AssertionError: 'base_link' not found in {'base_link_1_P_RS30X_SIMPLE_PLUS_8': <Occurrence>, 'neck_link_1_P_RS30X_SIMPLE_HORN_1': <Occurrence>}
+
+Ran 1 test in 0.001s
+FAILED (failures=1)
