@@ -501,6 +501,23 @@ class ExportLogicTests(unittest.TestCase):
         self.assertEqual(joints['fixed_joint_01']['original_child'], 'neck_link')
         self.assertFalse(joints['fixed_joint_01']['skip_from_urdf'])
 
+    def test_closed_loop_omission_is_nonfatal_but_other_tree_failures_remain_fatal(self):
+        joints = {
+            'continuous_joint_18': {
+                'skip_from_urdf': True,
+                'skip_reason': 'cycle_or_duplicate_parent',
+            },
+            'disconnected_joint': {
+                'skip_from_urdf': True,
+                'skip_reason': 'disconnected_from_base_link',
+            },
+        }
+
+        reportable, fatal = Joint.partition_skipped_joints(joints)
+
+        self.assertEqual(reportable, ['continuous_joint_18'])
+        self.assertEqual(fatal, ['disconnected_joint'])
+
     def test_roboviez_top_level_components_define_link_names_and_preflight(self):
         base_servo = Occurrence(
             'P_RS30X_SIMPLE_PLUS',

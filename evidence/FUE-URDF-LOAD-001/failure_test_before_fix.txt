@@ -1,0 +1,19 @@
+Command:
+python -m unittest tests.test_export_logic.ExportLogicTests.test_closed_loop_omission_is_nonfatal_but_other_tree_failures_remain_fatal
+
+Result:
+E
+======================================================================
+ERROR: test_closed_loop_omission_is_nonfatal_but_other_tree_failures_remain_fatal (tests.test_export_logic.ExportLogicTests.test_closed_loop_omission_is_nonfatal_but_other_tree_failures_remain_fatal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\yoshi\Downloads\fusion2urdf\Fusion-URDF-Exporter\tests\test_export_logic.py", line 516, in test_closed_loop_omission_is_nonfatal_but_other_tree_failures_remain_fatal
+    reportable, fatal = Joint.partition_skipped_joints(joints)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'URDF_Exporter.core.Joint' has no attribute 'partition_skipped_joints'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)
+TEST_EXIT_CODE=1
