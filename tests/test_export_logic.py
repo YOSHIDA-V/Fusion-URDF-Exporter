@@ -1,5 +1,7 @@
 import base64
+import ast
 import csv
+import json
 import importlib.util
 import os
 from pathlib import Path
@@ -228,6 +230,24 @@ def write_binary_stl(path, vertices):
 
 
 class ExportLogicTests(unittest.TestCase):
+
+    def test_roboviez_addin_has_manifest_and_run_stop_entrypoints(self):
+        manifest_path = package_root / 'RobovieZ_URDF_Exporter_AddIn.manifest'
+        entrypoint_path = package_root / 'RobovieZ_URDF_Exporter_AddIn.py'
+
+        self.assertTrue(manifest_path.is_file())
+        self.assertTrue(entrypoint_path.is_file())
+
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+        self.assertEqual(manifest['type'], 'addin')
+        self.assertFalse(manifest['runOnStartup'])
+        self.assertEqual(manifest['id'], '516b21c1-a7b7-45c4-82fb-e7013624dfef')
+
+        module = ast.parse(entrypoint_path.read_text(encoding='utf-8'))
+        functions = {node.name for node in module.body if isinstance(node, ast.FunctionDef)}
+        self.assertIn('run', functions)
+        self.assertIn('stop', functions)
+
     def test_occurrence_material_color_is_exported_to_web_viewer_urdf(self):
         occurrence = Occurrence('base_link', 'base_link', bodies=[Body(Color(51, 102, 204, 128), 0.5)])
         rgba = Link.occurrence_rgba(occurrence, list(occurrence.bRepBodies))

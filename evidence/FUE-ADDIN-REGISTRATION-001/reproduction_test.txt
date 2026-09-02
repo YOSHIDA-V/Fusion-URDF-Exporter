@@ -1,0 +1,12 @@
+Run ID: FUE-ADDIN-REGISTRATION-001-REPRO-20260903-01
+Source commit before evidence commit: fe5ca6eab98ac8278524b8ebcd14a2703a4c71d5
+Command: py -3 -m unittest discover -s tests -p test_export_logic.py -k roboviez_addin_has_manifest_and_run_stop_entrypoints -v
+Exit code: 1
+
+test_roboviez_addin_has_manifest_and_run_stop_entrypoints ... FAIL
+
+AssertionError: False is not true
+Missing file: RobovieZ_URDF_Exporter_AddIn.manifest
+
+Ran 1 test in 0.001s
+FAILED (failures=1)
