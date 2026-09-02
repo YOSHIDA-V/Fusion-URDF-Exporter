@@ -248,6 +248,24 @@ class ExportLogicTests(unittest.TestCase):
         self.assertIn('run', functions)
         self.assertIn('stop', functions)
 
+        addin_spec = importlib.util.spec_from_file_location(
+            'URDF_Exporter.RobovieZ_URDF_Exporter_AddIn',
+            entrypoint_path,
+        )
+        addin_module = importlib.util.module_from_spec(addin_spec)
+        addin_spec.loader.exec_module(addin_module)
+        forwarded_contexts = []
+        original_run = addin_module.exporter.run
+        try:
+            addin_module.exporter.run = lambda context: forwarded_contexts.append(context)
+            context = object()
+            addin_module.run(context)
+        finally:
+            addin_module.exporter.run = original_run
+
+        self.assertEqual(forwarded_contexts, [context])
+        self.assertIsNone(addin_module.stop(context))
+
     def test_occurrence_material_color_is_exported_to_web_viewer_urdf(self):
         occurrence = Occurrence('base_link', 'base_link', bodies=[Body(Color(51, 102, 204, 128), 0.5)])
         rgba = Link.occurrence_rgba(occurrence, list(occurrence.bRepBodies))
