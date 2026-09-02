@@ -336,8 +336,8 @@ class ExportLogicTests(unittest.TestCase):
         parent = Occurrence('parent_asm', 'asm+parent:1', children=[child])
         root = Root([parent])
 
-        self.assertEqual(utils.grouped_visible_bodies(parent, {'asm_parent_1'}), ['child_body'])
-        self.assertEqual(utils.visible_geometry_link_names(root, {'asm_parent_1'}), {'asm_parent_1'})
+        self.assertEqual(utils.grouped_visible_bodies(parent, {'parent_asm'}), ['child_body'])
+        self.assertEqual(utils.visible_geometry_link_names(root, {'parent_asm'}), {'parent_asm'})
 
     def test_nested_target_link_is_not_double_counted_in_parent_link(self):
         child = Occurrence('moving_link', 'asm+parent:1+moving:1', bodies=['moving_body'])
@@ -460,20 +460,19 @@ class ExportLogicTests(unittest.TestCase):
 
         self.assertEqual(msg, Joint.SUCCESS_MSG)
         self.assertEqual(joints['fixed_joint_01']['original_parent'], 'base_link')
-        self.assertEqual(
-            joints['fixed_joint_01']['original_child'],
-            utils.occurrence_link_name(neck_link),
-        )
+        self.assertEqual(joints['fixed_joint_01']['original_child'], 'neck_link')
         self.assertFalse(joints['fixed_joint_01']['skip_from_urdf'])
 
     def test_roboviez_top_level_components_define_link_names_and_preflight(self):
         base_servo = Occurrence(
             'P_RS30X_SIMPLE_PLUS',
             'base_link:1+P_RS30X_SIMPLE_PLUS:8',
+            bodies=['base_body'],
         )
         neck_horn = Occurrence(
             'P_RS30X_SIMPLE_HORN',
             'neck_link:1+P_RS30X_SIMPLE_HORN:1',
+            bodies=['neck_body'],
         )
         base_link = Occurrence('base_link', 'base_link:1', children=[base_servo])
         neck_link = Occurrence('neck_link', 'neck_link:1', children=[neck_horn])
@@ -485,11 +484,18 @@ class ExportLogicTests(unittest.TestCase):
         root.allOccurrences = [base_servo, neck_horn]
 
         links = utils.link_occurrence_map(root)
+        geometry_links = utils.visible_geometry_link_names(root, {'base_link', 'neck_link'})
+        export_sources = utils.export_link_sources(root, {'base_link', 'neck_link'})
         joints, msg = Joint.make_joints_dict(root, Joint.SUCCESS_MSG)
 
         self.assertEqual(msg, Joint.SUCCESS_MSG)
         self.assertIn('base_link', links)
         self.assertIn('neck_link', links)
+        self.assertEqual(geometry_links, {'base_link', 'neck_link'})
+        self.assertEqual(
+            [(entry['export_name'], len(entry['bodies'])) for entry in export_sources],
+            [('base_link', 1), ('neck_link', 1)],
+        )
         self.assertEqual(joints['fixed_joint_01']['parent'], 'base_link')
         self.assertEqual(joints['fixed_joint_01']['child'], 'neck_link')
 

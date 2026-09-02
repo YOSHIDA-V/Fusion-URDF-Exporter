@@ -136,6 +136,26 @@ def occurrence_link_name(occs):
     except:
         return 'base_link'
 
+def top_level_link_name(occs):
+    """Return the semantic URDF name of a top-level Fusion link component."""
+    if is_base_link_occurrence(occs):
+        return 'base_link'
+    try:
+        name = sanitize_link_name(occs.component.name)
+    except:
+        name = ''
+    return name or occurrence_link_name(occs)
+
+def top_level_occurrences(root):
+    """Return link-defining root occurrences without relying on allOccurrences."""
+    try:
+        return [root.occurrences.item(i) for i in range(root.occurrences.count)]
+    except:
+        try:
+            return [occs for occs in root.allOccurrences]
+        except:
+            return []
+
 def joint_endpoint_link_name(root, occs):
     """Return the top-level link occurrence that contains a Joint endpoint.
 
@@ -171,20 +191,17 @@ def joint_endpoint_link_name(root, occs):
             containing_occurrence = top_occurrence
             containing_path = top_path
 
-    resolved_occurrence = containing_occurrence if containing_occurrence is not None else occs
-    return occurrence_link_name(resolved_occurrence)
+    if containing_occurrence is not None:
+        return top_level_link_name(containing_occurrence)
+    return occurrence_link_name(occs)
 
 def link_occurrence_map(root):
     link_map = {}
-    try:
-        all_occs = [occs for occs in root.allOccurrences]
-    except:
-        all_occs = []
-    for occs in all_occs:
+    for occs in top_level_occurrences(root):
         is_base_link = is_base_link_occurrence(occs)
         if not is_base_link and not _is_exportable_occurrence(occs):
             continue
-        link_name = occurrence_link_name(occs)
+        link_name = top_level_link_name(occs)
         if link_name not in link_map:
             link_map[link_name] = occs
     return link_map
@@ -283,27 +300,42 @@ def visible_geometry_link_names(root, target_link_names=None):
     link_names = set()
     target_link_names = set(target_link_names) if target_link_names is not None else set()
 
-    def visit(occs):
+    def visit(occs, top_level=False):
         if not _is_exportable_occurrence(occs):
             return
-        link_name = occurrence_link_name(occs)
+        link_name = top_level_link_name(occs) if top_level else occurrence_link_name(occs)
         bodies = grouped_visible_bodies(occs, target_link_names)
         if bodies:
             link_names.add(link_name)
             return
         for child_occs in _child_occurrences(occs):
-            visit(child_occs)
+            visit(child_occs, False)
 
-    try:
-        top_occs = [root.occurrences.item(i) for i in range(root.occurrences.count)]
-    except:
-        try:
-            top_occs = [occs for occs in root.allOccurrences]
-        except:
-            top_occs = []
-    for occs in top_occs:
-        visit(occs)
+    for occs in top_level_occurrences(root):
+        visit(occs, True)
     return link_names
+
+def export_link_sources(root, target_link_names=None):
+    """Select top-level link assemblies and their grouped visible bodies."""
+    target_link_names = set(target_link_names) if target_link_names is not None else None
+    sources = []
+    source_names = set()
+    for occs in top_level_occurrences(root):
+        export_name = top_level_link_name(occs)
+        if target_link_names is not None and export_name not in target_link_names:
+            continue
+        if export_name in source_names or not _is_exportable_occurrence(occs):
+            continue
+        bodies = grouped_visible_bodies(occs, target_link_names)
+        if not bodies:
+            continue
+        sources.append({
+            'occurrence': occs,
+            'export_name': export_name,
+            'bodies': bodies,
+        })
+        source_names.add(export_name)
+    return sources
 
 def _binary_stl_geometry(path):
     with open(path, 'rb') as f:
@@ -548,18 +580,19 @@ def copy_occs(root, target_link_names=None):
     """    
     duplicate all the components
     """    
-    def copy_body(allOccs, occs):
+    def copy_body(allOccs, source):
         """    
         copy the old occs to new component
         """
         
-        bodies = grouped_visible_bodies(occs, target_link_names)
+        occs = source['occurrence']
+        export_name = source['export_name']
+        bodies = source['bodies']
         transform = adsk.core.Matrix3D.create()
         
         # Create new components from occs
         # This support even when a component has some occses. 
 
-        export_name = occurrence_link_name(occs)
         new_occs = None
         try:
             new_occs = allOccs.addNewComponent(transform)  # this create new occs
@@ -607,21 +640,13 @@ def copy_occs(root, target_link_names=None):
     cleanup_temp_occs(root)
     allOccs = root.occurrences
     copied_occs = []
-    copied_names = set()
     target_link_names = set(target_link_names) if target_link_names is not None else None
-    coppy_list = [occs for occs in root.allOccurrences]
+    sources = export_link_sources(root, target_link_names)
     try:
-        for occs in coppy_list:
-            export_name = occurrence_link_name(occs)
-            if target_link_names is not None and export_name not in target_link_names:
-                continue
-            if export_name in copied_names:
-                continue
-            if _is_exportable_occurrence(occs) and len(grouped_visible_bodies(occs, target_link_names)) > 0:
-                copied = copy_body(allOccs, occs)
-                if copied is not None:
-                    copied_occs.append(copied)
-                    copied_names.add(export_name)
+        for source in sources:
+            copied = copy_body(allOccs, source)
+            if copied is not None:
+                copied_occs.append(copied)
     except:
         delete_occs(copied_occs)
         raise
