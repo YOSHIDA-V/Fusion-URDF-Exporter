@@ -1,0 +1,8 @@
+Command:
+`python -m unittest tests.test_export_logic.ExportLogicTests.test_roboviez_script_has_manifest_and_identifiable_entrypoint`
+
+Result:
+
+- Failure: `manifest_path.is_file()` is false.
+- Missing source artifact: `RobovieZ_URDF_Exporter.manifest`.
+- Ran 1 test; failures=1; exit code 1.

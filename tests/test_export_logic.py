@@ -232,6 +232,35 @@ def write_binary_stl(path, vertices):
 
 class ExportLogicTests(unittest.TestCase):
 
+    def test_roboviez_script_has_manifest_and_identifiable_entrypoint(self):
+        manifest_path = package_root / 'RobovieZ_URDF_Exporter.manifest'
+        entrypoint_path = package_root / 'RobovieZ_URDF_Exporter.py'
+
+        self.assertTrue(manifest_path.is_file())
+        self.assertTrue(entrypoint_path.is_file())
+
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+        self.assertEqual(manifest['type'], 'script')
+
+        script_spec = importlib.util.spec_from_file_location(
+            'URDF_Exporter.RobovieZ_URDF_Exporter',
+            entrypoint_path,
+        )
+        script_module = importlib.util.module_from_spec(script_spec)
+        script_spec.loader.exec_module(script_module)
+        forwarded_calls = []
+        original_run = script_module.exporter.run
+        try:
+            script_module.exporter.run = lambda context, entrypoint_file=None: forwarded_calls.append(
+                (context, entrypoint_file)
+            )
+            context = object()
+            script_module.run(context)
+        finally:
+            script_module.exporter.run = original_run
+
+        self.assertEqual(forwarded_calls, [(context, str(entrypoint_path))])
+
     def test_roboviez_addin_has_manifest_and_run_stop_entrypoints(self):
         manifest_path = package_root / 'RobovieZ_URDF_Exporter_AddIn.manifest'
         entrypoint_path = package_root / 'RobovieZ_URDF_Exporter_AddIn.py'
