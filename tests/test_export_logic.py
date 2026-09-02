@@ -369,6 +369,32 @@ class ExportLogicTests(unittest.TestCase):
             utils.remove_generated_reports(tmp)
             self.assertEqual([name for name in report_names if os.path.exists(os.path.join(tmp, name))], [])
 
+    def test_success_cleanup_preserves_joint_tree_when_urdf_omits_a_closed_loop(self):
+        joint_reports = [
+            'joint_tree_report.txt',
+            'joint_tree_edges.csv',
+            'joint_tree_links.csv',
+        ]
+        transient_reports = [
+            'mesh_reuse_report.csv',
+            'extra_fixed_links.csv',
+            'export_structure_report.csv',
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in joint_reports + transient_reports:
+                open(os.path.join(tmp, name), 'w').close()
+
+            utils.remove_generated_reports(tmp, preserve_joint_tree=True)
+
+            self.assertEqual(
+                [name for name in joint_reports if os.path.exists(os.path.join(tmp, name))],
+                joint_reports,
+            )
+            self.assertEqual(
+                [name for name in transient_reports if os.path.exists(os.path.join(tmp, name))],
+                [],
+            )
+
     def test_assembly_occurrence_can_be_flattened_into_one_link(self):
         child = Occurrence('child_part', 'asm+parent:1+child:1', bodies=['child_body'])
         parent = Occurrence('parent_asm', 'asm+parent:1', children=[child])

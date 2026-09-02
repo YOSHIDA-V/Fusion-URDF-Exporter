@@ -544,15 +544,19 @@ def write_export_structure_report(save_dir, target_link_names, export_entries, i
             })
     return report_file
 
-def remove_generated_reports(save_dir):
-    for file_name in [
-        'joint_tree_report.txt',
-        'joint_tree_edges.csv',
-        'joint_tree_links.csv',
+def remove_generated_reports(save_dir, preserve_joint_tree=False):
+    report_names = [
         'mesh_reuse_report.csv',
         'extra_fixed_links.csv',
         'export_structure_report.csv',
-    ]:
+    ]
+    if not preserve_joint_tree:
+        report_names += [
+            'joint_tree_report.txt',
+            'joint_tree_edges.csv',
+            'joint_tree_links.csv',
+        ]
+    for file_name in report_names:
         path = os.path.join(save_dir, file_name)
         if os.path.exists(path):
             try:

@@ -483,6 +483,35 @@ def _orient_from_base_link(joints_dict):
     ordered += diagnostic_names
     return {name: joints_dict[name] for name in ordered}
 
+
+NONFATAL_URDF_OMISSION_REASONS = frozenset([
+    'hidden_joint_occurrence',
+    'overridden_by_urdf_joint',
+    'same_link_joint',
+    'cycle_or_duplicate_parent',
+])
+
+
+def partition_skipped_joints(joints_dict):
+    """Separate reportable URDF omissions from unsafe tree failures.
+
+    URDF cannot encode a closed kinematic loop.  The tree orientation pass
+    therefore omits one closure edge and records it as
+    ``cycle_or_duplicate_parent``.  That omission is reportable but must not
+    prevent the remaining tree from being exported.
+    """
+    reportable = []
+    fatal = []
+    for name in joints_dict:
+        entry = joints_dict[name]
+        if not entry.get('skip_from_urdf', False):
+            continue
+        if entry.get('skip_reason', '') in NONFATAL_URDF_OMISSION_REASONS:
+            reportable.append(name)
+        else:
+            fatal.append(name)
+    return reportable, fatal
+
 def make_joints_dict(root, msg):
     """
     joints_dict holds parent, axis and xyz informatino of the joints

@@ -1,0 +1,17 @@
+Run ID: FUE-URDF-CONTROLLED-20260903-0257
+Environment: Windows PowerShell, Python unit-test environment
+
+Commands:
+python -m py_compile URDF_Exporter.py core\Joint.py utils\utils.py tests\test_export_logic.py
+python -m unittest tests.test_export_logic.ExportLogicTests.test_closed_loop_omission_is_nonfatal_but_other_tree_failures_remain_fatal tests.test_export_logic.ExportLogicTests.test_success_cleanup_preserves_joint_tree_when_urdf_omits_a_closed_loop tests.test_export_logic.ExportLogicTests.test_success_cleanup_removes_all_generated_reports
+python -m unittest discover -s tests -v
+
+Results:
+PY_COMPILE_EXIT=0
+Focused tests: Ran 3 tests, OK, exit 0
+Full suite: Ran 40 tests in 1.052s, OK, exit 0
+
+Qualification scope:
+- Proves the corrected skip classification in the controlled unit-test environment.
+- Proves joint-tree diagnostics are retained when a closed-loop edge is omitted.
+- Does not prove Fusion target export or WSL URDF loading; those remain target checks.

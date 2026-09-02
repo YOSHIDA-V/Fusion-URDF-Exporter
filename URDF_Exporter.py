@@ -63,12 +63,7 @@ def run(context):
             ui.messageBox(msg, title)
             return 0   
 
-        nonfatal_skip_reasons = set(['hidden_joint_occurrence', 'overridden_by_urdf_joint', 'same_link_joint'])
-        fatal_skipped = [
-            joint for joint in all_joints_dict
-            if all_joints_dict[joint].get('skip_from_urdf', False)
-            and all_joints_dict[joint].get('skip_reason', '') not in nonfatal_skip_reasons
-        ]
+        reportable_skipped, fatal_skipped = Joint.partition_skipped_joints(all_joints_dict)
         if fatal_skipped:
             report_file, csv_file = Write.write_joint_tree_report(all_joints_dict, {}, save_dir)
             details = [
@@ -170,8 +165,15 @@ def run(context):
                 .format('\n'.join(validation['errors']))
             )
 
-        utils.remove_generated_reports(save_dir)
+        utils.remove_generated_reports(save_dir, preserve_joint_tree=bool(reportable_skipped))
         viewer_url = Write.open_web_viewer(viewer_html)
+        if reportable_skipped:
+            msg += '\n\nURDF tree omissions (see joint_tree_report.txt):\n{}'.format(
+                '\n'.join([
+                    '{}: {}'.format(joint, all_joints_dict[joint].get('skip_reason', 'unknown'))
+                    for joint in reportable_skipped
+                ])
+            )
         msg += '\n\nModel viewer opened:\n{}'.format(viewer_url)
         ui.messageBox(msg, title)
     except RuntimeError as e:
