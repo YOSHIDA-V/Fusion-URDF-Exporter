@@ -1,0 +1,21 @@
+Run ID: `FUE-RUNTIME-CONTROLLED-20260903-0306`
+
+Commands:
+
+- `python -m py_compile RobovieZ_URDF_Exporter_AddIn.py URDF_Exporter.py utils\utils.py tests\test_export_logic.py`
+- `python -m unittest tests.test_export_logic.ExportLogicTests.test_roboviez_addin_has_manifest_and_run_stop_entrypoints tests.test_export_logic.ExportLogicTests.test_runtime_status_identifies_loaded_files_and_phase`
+- `python -m unittest discover -s tests -v`
+
+Results:
+
+- Python compile: exit 0
+- Focused tests: 2 passed, exit 0
+- Full suite: 41 passed in 1.043 seconds, exit 0
+
+Controlled findings:
+
+- The Add-In wrapper forwards its absolute `__file__` path to the exporter.
+- Runtime identity records the entrypoint and loaded-file SHA-256 values.
+- Runtime status preserves one run ID across phase and failure updates.
+
+Target limitation: These tests do not identify or execute the Python modules currently cached in the already-running Fusion process.

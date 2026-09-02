@@ -5,7 +5,7 @@ from . import URDF_Exporter as exporter
 
 def run(context):
     """Start one Robovie-Z export from Fusion's Add-Ins manager."""
-    return exporter.run(context)
+    return exporter.run(context, entrypoint_file=__file__)
 
 
 def stop(context):

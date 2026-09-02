@@ -19,8 +19,10 @@ from .tools import validate_export_package
 
 # I'm not sure how prismatic joint acts if there is no limit in fusion model
 
-def run(context):
+def run(context, entrypoint_file=None):
     ui = None
+    save_dir = None
+    runtime_identity = None
     success_msg = 'Successfully create URDF file'
     msg = success_msg
     
@@ -50,6 +52,12 @@ def run(context):
         save_dir = save_dir + '/' + package_name
         try: os.mkdir(save_dir)
         except: pass     
+
+        runtime_identity = utils.make_runtime_identity(
+            entrypoint_file or __file__,
+            [__file__, Joint.__file__, Link.__file__, Write.__file__, utils.__file__, validate_export_package.__file__],
+        )
+        utils.write_runtime_status(save_dir, runtime_identity, 'joint_preflight')
 
         package_dir = os.path.abspath(os.path.dirname(__file__)) + '/package/'
         
@@ -81,6 +89,7 @@ def run(context):
             if not all_joints_dict[joint].get('skip_from_urdf', False)
         }
 
+        utils.write_runtime_status(save_dir, runtime_identity, 'link_preflight')
         link_occurrences = utils.link_occurrence_map(root)
         if 'base_link' not in link_occurrences:
             report_file, csv_file = Write.write_joint_tree_report(joints_dict, {}, save_dir)
@@ -111,6 +120,7 @@ def run(context):
         links_xyz_dict = {}
 
         # copy over package files
+        utils.write_runtime_status(save_dir, runtime_identity, 'package_setup')
         utils.copy_package(save_dir, package_dir)
         utils.update_cmakelists(save_dir, package_name)
         utils.update_package_xml(save_dir, package_name)
@@ -119,6 +129,7 @@ def run(context):
         temp_export_occs = []
         link_part_keys = {}
         try:
+            utils.write_runtime_status(save_dir, runtime_identity, 'flatten_links')
             temp_export_occs = utils.copy_occs(root, target_link_names)
             inertial_dict, msg = Link.make_inertial_dict(root, msg, target_link_names, temp_export_occs)
             if msg != success_msg:
@@ -127,6 +138,7 @@ def run(context):
             Link.add_virtual_inertials(inertial_dict, joints_dict, target_link_names)
             report_file, csv_file = Write.write_joint_tree_report(all_joints_dict, inertial_dict, save_dir)
             utils.write_extra_fixed_links_report(save_dir, extra_fixed_links)
+            utils.write_runtime_status(save_dir, runtime_identity, 'stl_export')
             export_result = utils.export_stl(design, save_dir, components, temp_export_occs)
             utils.write_export_structure_report(save_dir, target_link_names, temp_export_occs, inertial_dict, extra_fixed_links, export_result)
             if export_result.get('failed'):
@@ -141,6 +153,7 @@ def run(context):
 
         # --------------------
         # Generate URDF
+        utils.write_runtime_status(save_dir, runtime_identity, 'urdf_write')
         Write.write_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir, mesh_reuse_info)
         Write.write_materials_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir)
         for legacy_relpath in [
@@ -158,6 +171,7 @@ def run(context):
         viewer_html = Write.write_web_viewer_urdf(robot_name, save_dir)
         utils.cleanup_reused_meshes(save_dir, mesh_reuse_info)
 
+        utils.write_runtime_status(save_dir, runtime_identity, 'validation')
         validation = validate_export_package.validate(save_dir)
         if validation['errors']:
             raise RuntimeError(
@@ -175,10 +189,16 @@ def run(context):
                 ])
             )
         msg += '\n\nModel viewer opened:\n{}'.format(viewer_url)
+        utils.write_runtime_status(save_dir, runtime_identity, 'complete')
         ui.messageBox(msg, title)
     except RuntimeError as e:
+        if save_dir and runtime_identity:
+            utils.write_runtime_status(save_dir, runtime_identity, 'failed', str(e))
         if ui:
             ui.messageBox(str(e), title)
     except:
+        failure = traceback.format_exc()
+        if save_dir and runtime_identity:
+            utils.write_runtime_status(save_dir, runtime_identity, 'failed', failure)
         if ui:
-            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+            ui.messageBox('Failed:\n{}'.format(failure))

@@ -8,7 +8,10 @@ Created on Sun May 12 19:15:34 2019
 import adsk, adsk.core, adsk.fusion
 import os.path, re
 import csv
+import hashlib
+import json
 import struct
+import time
 from xml.etree import ElementTree
 from xml.dom import minidom
 import shutil  # Replaced distutils with shutil
@@ -16,6 +19,53 @@ import fileinput
 import sys
 
 TEMP_COMPONENT_PREFIX = 'fusion2urdf_tmp_'
+
+
+def _runtime_file_record(path):
+    resolved = os.path.abspath(path)
+    record = {'exists': os.path.isfile(resolved)}
+    if not record['exists']:
+        return resolved, record
+    with open(resolved, 'rb') as f:
+        record['sha256'] = hashlib.sha256(f.read()).hexdigest()
+    stat = os.stat(resolved)
+    record['size'] = stat.st_size
+    record['mtime_ns'] = getattr(stat, 'st_mtime_ns', int(stat.st_mtime * 1000000000))
+    return resolved, record
+
+
+def make_runtime_identity(entrypoint_file, loaded_files=None):
+    """Bind one Fusion export run to the Python files actually selected."""
+    entrypoint = os.path.abspath(entrypoint_file)
+    paths = [entrypoint] + list(loaded_files or [])
+    records = {}
+    for path in paths:
+        resolved, record = _runtime_file_record(path)
+        records[resolved] = record
+    return {
+        'schema_version': 1,
+        'run_id': 'FUE-RUNTIME-{}-{}'.format(time.strftime('%Y%m%dT%H%M%SZ', time.gmtime()), os.getpid()),
+        'started_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'pid': os.getpid(),
+        'entrypoint': entrypoint,
+        'loaded_files': records,
+    }
+
+
+def write_runtime_status(save_dir, identity, phase, error=''):
+    """Persist the latest export phase without changing the run identity."""
+    status = dict(identity)
+    status['phase'] = phase
+    status['updated_at_utc'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    if error:
+        status['error'] = str(error)
+    path = os.path.join(save_dir, 'runtime_status.json')
+    temp_path = path + '.tmp'
+    with open(temp_path, 'w', encoding='utf-8') as f:
+        json.dump(status, f, ensure_ascii=False, indent=2, sort_keys=True)
+        f.write('\n')
+    os.replace(temp_path, path)
+    return path
 
 def is_visible(item):
     try:

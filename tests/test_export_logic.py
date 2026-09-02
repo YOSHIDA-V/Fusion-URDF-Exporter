@@ -283,11 +283,18 @@ class ExportLogicTests(unittest.TestCase):
             with open(status_path, encoding='utf-8') as f:
                 status = json.load(f)
 
+            failed_path = utils.write_runtime_status(tmp, identity, 'failed', 'example failure')
+            with open(failed_path, encoding='utf-8') as f:
+                failed_status = json.load(f)
+
         self.assertEqual(status['phase'], 'joint_preflight')
         self.assertEqual(status['entrypoint'], os.path.abspath(entrypoint))
         self.assertEqual(status['loaded_files'][os.path.abspath(exporter)]['sha256'], hashlib.sha256(b'exporter').hexdigest())
         self.assertTrue(status['run_id'].startswith('FUE-RUNTIME-'))
         self.assertIsInstance(status['pid'], int)
+        self.assertEqual(failed_status['run_id'], status['run_id'])
+        self.assertEqual(failed_status['phase'], 'failed')
+        self.assertEqual(failed_status['error'], 'example failure')
 
     def test_occurrence_material_color_is_exported_to_web_viewer_urdf(self):
         occurrence = Occurrence('base_link', 'base_link', bodies=[Body(Color(51, 102, 204, 128), 0.5)])
