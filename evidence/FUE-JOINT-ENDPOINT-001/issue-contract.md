@@ -19,4 +19,3 @@
 - Controlled-environment pass criteria: The reproduction test resolves nested Joint endpoints to their containing top-level link occurrences; all exporter unit tests pass.
 - Target pass criteria: The same candidate is installed in Fusion, Robovie-Z export reaches STL/Xacro generation, and the user confirms the generated model.
 - Previously verified behaviors that must not regress: Component1 remains URDF child; Component2 remains URDF parent; nested target links are not double-counted; copied component instances remain uniquely named; `base_link:1` remains canonicalized to `base_link`.
-
