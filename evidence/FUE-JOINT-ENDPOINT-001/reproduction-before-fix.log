@@ -1,0 +1,18 @@
+test_nested_joint_endpoints_resolve_to_top_level_link_components (tests.test_export_logic.ExportLogicTests.test_nested_joint_endpoints_resolve_to_top_level_link_components) ... FAIL
+
+======================================================================
+FAIL: test_nested_joint_endpoints_resolve_to_top_level_link_components (tests.test_export_logic.ExportLogicTests.test_nested_joint_endpoints_resolve_to_top_level_link_components)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\yoshi\Downloads\fusion2urdf\Fusion-URDF-Exporter\tests\test_export_logic.py", line 462, in test_nested_joint_endpoints_resolve_to_top_level_link_components
+    self.assertEqual(joints['fixed_joint_01']['original_parent'], 'base_link')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'base_link_1_P_RS30X_SIMPLE_PLUS_8' != 'base_link'
+- base_link_1_P_RS30X_SIMPLE_PLUS_8
++ base_link
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.004s
+
+FAILED (failures=1)

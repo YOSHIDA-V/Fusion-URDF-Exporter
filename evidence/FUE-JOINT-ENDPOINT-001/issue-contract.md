@@ -1,0 +1,22 @@
+# FUE-JOINT-ENDPOINT-001
+
+- Issue ID: `FUE-JOINT-ENDPOINT-001`
+- Observed behavior: Robovie-Z export stops before STL/Xacro generation and leaves only joint-tree diagnostics.
+- Failure run ID: `FUE-JOINT-ENDPOINT-001-20260903T015249+09:00`
+- Execution target: Autodesk Fusion export diagnostics from the Robovie-Z design; controlled reproduction uses Python unit tests.
+- Base commit: `5af8e71c464e18efc98afee53453ce10407e57a8`
+- `core/Joint.py` SHA-256: `b1963f1feea09605abf8c1b10595d16b30f6e2642dcde31b07015dd4037bc306`
+- `utils/utils.py` SHA-256: `5091c5da305d22df5547996501d2c5c7643e055bfab41840493ae3d3aea92e44`
+- Failure report: `C:\Users\yoshi\Downloads\robovie-z_description\joint_tree_report.txt`
+- Failure report SHA-256: `c957bddd08ad9597854355e636516b9476e0d8894dc1baf24f0760641834550f`
+- Failure edge CSV: `C:\Users\yoshi\Downloads\robovie-z_description\joint_tree_edges.csv`
+- Failure edge CSV SHA-256: `0faabafd515de739b324cd30c3401f61d6445249cbac0d5be2397d532d0c1c7b`
+- Reproduction values: 31 total joints; 31 As-Built joints; 31 `disconnected_from_base_link`; 0 exact `base_link` endpoints; 5 `base_link_*` endpoints.
+- Root-cause hypothesis: Joint endpoints inside a top-level link assembly are named from the entire nested `fullPathName` instead of the containing top-level link occurrence.
+- Values that prove the cause: A nested endpoint such as `base_link:1+P_RS30X_SIMPLE_PLUS:8` resolves to `base_link_1_P_RS30X_SIMPLE_PLUS_8` on the base commit, preventing traversal from exact `base_link`.
+- Files allowed to change: `core/Joint.py`, `utils/utils.py`, `tests/test_export_logic.py`, and this issue evidence directory.
+- Files forbidden to change: Fusion design, generated Robovie-Z artifacts, package templates, ROS launch files, Fusion installed script, and unrelated exporter behavior.
+- Controlled-environment pass criteria: The reproduction test resolves nested Joint endpoints to their containing top-level link occurrences; all exporter unit tests pass.
+- Target pass criteria: The same candidate is installed in Fusion, Robovie-Z export reaches STL/Xacro generation, and the user confirms the generated model.
+- Previously verified behaviors that must not regress: Component1 remains URDF child; Component2 remains URDF parent; nested target links are not double-counted; copied component instances remain uniquely named; `base_link:1` remains canonicalized to `base_link`.
+
