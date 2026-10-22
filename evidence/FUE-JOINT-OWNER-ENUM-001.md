@@ -45,6 +45,18 @@
   No actual CAD names, paths or geometry are published with this evidence.
 - Export root cause remains unproven; the next stage only adds observation.
 
+## Diagnostic Control
+
+- Clean candidate b353d7a2687bcf9433a134b34b2a91cc70dee1d2.
+- Run joint-owner-diagnostics-control-20261022T021641Z; PID 18128.
+- python -B -X utf8 -m unittest discover -s tests -v: 56 tests, exit 0.
+- JointDiagnostics.py SHA-256:
+  4833988268d3ae493b95010ccd029c03fdf9771339f6d52f3d7179850490bc2b.
+- This only qualifies read-only diagnostics against fixtures. It does not
+  fix the export, determine actual owners, or qualify a Fusion export.
+- The failure-only hook preserves the existing unsafe-joint stop. It writes
+  observations outside the exported package, not into the CAD document.
+
 ## API References
 
 - https://help.autodesk.com/cloudhelp/ENU/Fusion-360-API/files/fusion_Component_allAsBuiltJoints.htm
