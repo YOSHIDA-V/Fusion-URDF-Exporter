@@ -77,6 +77,21 @@
 - No guessed links, automatic fixed joints, CAD deletion or preview APIs.
 - This is a user-requested contract change, not a silent weakening of a test.
 
+## Visible-Only Failure Reproduction
+
+- Clean baseline f7394424b9c36dad0544a0d34ec1072038b4cf47.
+- Run visible-joint-baseline-20261022T023210Z; PID 34120; exit 1.
+- 65 fixture tests ran with six failures: unreadable refs remain fatal,
+  hidden component joints remain active, hidden slider limits are evaluated,
+  and readable endpoint / invalid-handle information is lost or unchecked.
+- Redacted full failure log: FUE-JOINT-OWNER-ENUM-001-visible-baseline.txt.
+- Proven implementation cause under the amended contract: unavailable
+  references are unconditionally fatal before existing visible-geometry
+  coverage checks can run. Hidden endpoint scope is not applied before motion
+  extraction. This does not prove why Fusion retains the five records.
+- Old model data and actual diagnostic JSON stay private. The fix must retain
+  visible-link coverage checks and must not replace missing connections.
+
 ## API References
 
 - https://help.autodesk.com/cloudhelp/ENU/Fusion-360-API/files/fusion_Component_allAsBuiltJoints.htm
