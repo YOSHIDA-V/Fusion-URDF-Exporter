@@ -92,6 +92,21 @@
 - Old model data and actual diagnostic JSON stay private. The fix must retain
   visible-link coverage checks and must not replace missing connections.
 
+## Controlled Fix Qualification
+
+- Public control a2b90c31e8e377ce23b9880c04b7f839ffacd346:
+  visible-joint-control-20261022T023746Z, PID 46584, 65 tests passed, exit 0.
+- Private pinned-runtime integration e52a64a97957326314b0b321ae5d0ed9b25f4c3f:
+  visible-joint-integration-20261022T024320Z, PID 34572, 72 tests passed, exit 0.
+- Pinned runtime Joint.py SHA-256:
+  73aa92075afc5c54902a085306e6fc585a8fdfb95e3056979b26e81483429085.
+- Pinned runtime URDF_Exporter.py SHA-256:
+  bc6990850d2b7e74e5241834b11372f8cee03c080f8bbeb46cc700d0ab4fb304.
+- The private integration preserves the installed runtime's existing unrelated
+  behavior and is not uploaded. Public and private complete runtime files are
+  not claimed to be byte-identical. The applied collection fix is the same.
+- Native export remains unverified at this stage. No main promotion.
+
 ## API References
 
 - https://help.autodesk.com/cloudhelp/ENU/Fusion-360-API/files/fusion_Component_allAsBuiltJoints.htm
