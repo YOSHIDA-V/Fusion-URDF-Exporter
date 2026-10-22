@@ -1,0 +1,34 @@
+{
+  "issue_id": "FUE-NESTED-MOTION-001",
+  "state": "REPRODUCED",
+  "scope": "Anonymized nested assembly slider omission; no CAD data attached",
+  "test_commit": "36a5e6b13d65176cf96f9203729e64a3fb910cc9",
+  "clean_worktree": true,
+  "command": "python -B -X utf8 -m unittest discover -s tests -p test_nested_joint_links.py -v",
+  "started_at_utc": "2026-10-22T07:15:36.7162287Z",
+  "completed_at_utc": "2026-10-22T07:15:38.1824929Z",
+  "pid": 27600,
+  "utils_sha256": "8140be9276b3807772845f5055f1fcf153e036dc7271cca5d1fccf009f3c2398",
+  "joint_sha256": "f6e783f1585bedbd27eae86b01001e71bc1aff2722a5e1b927e22c9c9650b294",
+  "test_sha256": "49283f41db818dec4f8898d1802a307e4699bae06b206844b950a4eafa3055c6",
+  "fixture": {
+    "visible_bodies": 31,
+    "expected_links": 23,
+    "expected_fixed_joints": 10,
+    "expected_prismatic_joints": 12,
+    "expected_prismatic_range_m": [-0.002, 0.0]
+  },
+  "observed": {
+    "active_prismatic_joints": 0,
+    "active_fixed_joints": 10,
+    "tests_run": 15,
+    "test_failures": 12,
+    "exit_code": 1,
+    "failure_excerpt": "test_twelve_nested_sliders_are_not_omitted: AssertionError: 0 != 12"
+  },
+  "root_cause": "joint_endpoint_link_name maps distinct nested moving endpoints to one enclosing top-level link; _joint_entry consequently omits the motion as same_link_joint. Link export also enumerates only top-level sources.",
+  "allowed_changes": ["Joint endpoint/link-boundary ownership", "Visible-body export ownership", "Focused regression tests"],
+  "forbidden_changes": ["CAD edits", "Invented joints or limits", "Mesh reuse", "Inspector behavior"],
+  "controlled_pass": "Keep 12 prismatic edges with Fusion limits, 23 connected links, all 31 visible bodies exactly once, copied occurrence identity, hidden-body filtering, and previous regressions.",
+  "target_pass": "Native Fusion export and generated standard viewer preserve the slider joints; requires separate target verification."
+}
