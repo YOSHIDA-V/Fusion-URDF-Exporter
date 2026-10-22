@@ -1,0 +1,32 @@
+{
+  "issue_id": "FUE-OCCURRENCE-LINK-NAME-001",
+  "state": "ROOT_CAUSE_PROVEN",
+  "run_id": "occurrence-names-baseline-20261022T004006Z",
+  "commit": "9e8d935f1273488576046ee39211fd6884fd4d92",
+  "target": "Python fixtures, no Fusion API execution",
+  "clean_worktree": true,
+  "utils_sha256": "ca4e143a6d79029da78291f3ecb42e4c03e8d0621e0f04736e0f2c87598a3f2a",
+  "test_sha256": "7712639ad46972de945730adcb52d35cae67cb46358f48d1f9cf01967c5bbec2",
+  "python_sha256": "4fb049eeddd221e5470cd33177299dd13f85eba25beef7aced7a0890ad85181f",
+  "arguments": [
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-p",
+    "test_occurrence_link_names.py",
+    "-v"
+  ],
+  "pid": 41496,
+  "started_at": "2026-10-22T00:40:07.1053766Z",
+  "finished_at": "2026-10-22T00:40:12.3462894Z",
+  "exit_code": 1,
+  "tests": 6,
+  "failures": 3,
+  "errors": 2,
+  "passed": 1,
+  "original_log_sha256": "f945e79cab4f377afd4db47a951c7ad9e956f41a1006f4ecf2cba56ef2701444",
+  "log_encoding": "original CP932 converted to UTF-8; only checkout paths redacted",
+  "raw_cad_data": "not included"
+}

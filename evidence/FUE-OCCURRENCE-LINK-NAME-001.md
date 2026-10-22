@@ -1,6 +1,8 @@
 # FUE-OCCURRENCE-LINK-NAME-001
 
-- State: OBSERVED.
+- State: ROOT_CAUSE_PROVEN.
+- Failure run: occurrence-names-baseline-20261022T004006Z, clean commit 9e8d935. Six tests ran: three failures, two errors, one pass.
+- Reproduced result: four occurrences collapse to two link sources/joint children; the Japanese-name pair is rejected by preflight. First-instance semantic names and shared mesh-part identity pass as a control.
 - Observed failure: distinct occurrence names ending in :1 and :2 are rejected as duplicate top-level URDF links.
 - Root-cause hypothesis: top_level_link_name uses only Component.name, discarding the occurrence instance number.
 - Baseline: 42b67e1 plus a byte-identical snapshot of the current utils/utils.py; pre-existing changes in that file are not part of this fix.

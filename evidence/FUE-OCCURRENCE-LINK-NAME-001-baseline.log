@@ -1,0 +1,80 @@
+test_default_semantic_names_and_mesh_part_identity_are_preserved (test_occurrence_link_names.OccurrenceLinkNameTests.test_default_semantic_names_and_mesh_part_identity_are_preserved) ... ok
+test_distinct_occurrences_pass_name_preflight (test_occurrence_link_names.OccurrenceLinkNameTests.test_distinct_occurrences_pass_name_preflight) ... ERROR
+test_export_sources_keep_each_body_in_its_own_link (test_occurrence_link_names.OccurrenceLinkNameTests.test_export_sources_keep_each_body_in_its_own_link) ... FAIL
+test_japanese_component_name_keeps_distinct_instance_numbers (test_occurrence_link_names.OccurrenceLinkNameTests.test_japanese_component_name_keeps_distinct_instance_numbers) ... ERROR
+test_joints_keep_four_distinct_children_and_their_origins (test_occurrence_link_names.OccurrenceLinkNameTests.test_joints_keep_four_distinct_children_and_their_origins) ... FAIL
+test_link_map_retains_all_four_occurrence_objects (test_occurrence_link_names.OccurrenceLinkNameTests.test_link_map_retains_all_four_occurrence_objects) ... FAIL
+
+======================================================================
+ERROR: test_distinct_occurrences_pass_name_preflight (test_occurrence_link_names.OccurrenceLinkNameTests.test_distinct_occurrences_pass_name_preflight)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<checkout>\tests\test_occurrence_link_names.py", line 22, in test_distinct_occurrences_pass_name_preflight
+    utils.validate_occurrence_link_names(self.root)
+  File "<checkout>\utils\utils.py", line 303, in validate_occurrence_link_names
+    raise RuntimeError(
+RuntimeError: Multiple Fusion occurrences resolve to the same URDF link name.
+
+bumper_a <= bumper_a:1, bumper_a:2
+bumper_b <= bumper_b:1, bumper_b:2
+
+Create separate top-level Fusion Components and give every Component a unique URDF link name.
+
+======================================================================
+ERROR: test_japanese_component_name_keeps_distinct_instance_numbers (test_occurrence_link_names.OccurrenceLinkNameTests.test_japanese_component_name_keeps_distinct_instance_numbers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<checkout>\tests\test_occurrence_link_names.py", line 57, in test_japanese_component_name_keeps_distinct_instance_numbers
+    utils.validate_occurrence_link_names(root)
+  File "<checkout>\utils\utils.py", line 303, in validate_occurrence_link_names
+    raise RuntimeError(
+RuntimeError: Multiple Fusion occurrences resolve to the same URDF link name.
+
+42_____1 <= 42バンパー 1:1, 42バンパー 1:2
+
+Create separate top-level Fusion Components and give every Component a unique URDF link name.
+
+======================================================================
+FAIL: test_export_sources_keep_each_body_in_its_own_link (test_occurrence_link_names.OccurrenceLinkNameTests.test_export_sources_keep_each_body_in_its_own_link)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<checkout>\tests\test_occurrence_link_names.py", line 32, in test_export_sources_keep_each_body_in_its_own_link
+    self.assertEqual([entry['export_name'] for entry in sources], self.expected)
+AssertionError: Lists differ: ['bumper_a', 'bumper_b'] != ['bumper_a', 'bumper_a_2', 'bumper_b', 'bumper_b_2']
+
+First differing element 1:
+'bumper_b'
+'bumper_a_2'
+
+Second list contains 2 additional elements.
+First extra element 2:
+'bumper_b'
+
+- ['bumper_a', 'bumper_b']
++ ['bumper_a', 'bumper_a_2', 'bumper_b', 'bumper_b_2']
+
+======================================================================
+FAIL: test_joints_keep_four_distinct_children_and_their_origins (test_occurrence_link_names.OccurrenceLinkNameTests.test_joints_keep_four_distinct_children_and_their_origins)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<checkout>\tests\test_occurrence_link_names.py", line 45, in test_joints_keep_four_distinct_children_and_their_origins
+    self.assertEqual({entry['child'] for entry in active}, set(self.expected))
+AssertionError: Items in the second set but not the first:
+'bumper_a_2'
+'bumper_b_2'
+
+======================================================================
+FAIL: test_link_map_retains_all_four_occurrence_objects (test_occurrence_link_names.OccurrenceLinkNameTests.test_link_map_retains_all_four_occurrence_objects)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<checkout>\tests\test_occurrence_link_names.py", line 26, in test_link_map_retains_all_four_occurrence_objects
+    self.assertEqual(set(mapping), {'base_link', *self.expected})
+AssertionError: Items in the second set but not the first:
+'bumper_a_2'
+'bumper_b_2'
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.057s
+
+FAILED (failures=3, errors=2)
+
