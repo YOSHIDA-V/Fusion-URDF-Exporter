@@ -28,6 +28,23 @@
 - Main is not promoted without the same-artifact target result and user
   confirmation. Real model reports remain local and are not published.
 
+## Baseline Reproduction
+
+- Run: joint-owner-baseline-20261022T021252Z; clean commit
+  98fc3e6ce59bd2f4e31783449e15f5c454b0cafd; fixture PID 51396.
+- Command: python -B -X utf8 tests/test_joint_diagnostics.py.
+- Eight tests ran: the existing five-endpoint-loss reproduction passed;
+  seven ownership diagnostic tests failed because no diagnostic exists.
+- Exit code: 1. This is a fixture reproduction, not a native Fusion test.
+- Test SHA-256: 6d8afef4771add92232e020a0ddd08ac88e1085cf78bb66878fd8a35a97ffb83.
+- Control Joint.py SHA-256:
+  572b4b381d1fd2485f6c7b44e8aa32d0fa3a66372e26d268ea5005e0b8c70b26.
+- Python executable SHA-256:
+  4fb049eeddd221e5470cd33177299dd13f85eba25beef7aced7a0890ad85181f.
+- Full pre-launch manifest, PID, stdout and stderr are retained privately.
+  No actual CAD names, paths or geometry are published with this evidence.
+- Export root cause remains unproven; the next stage only adds observation.
+
 ## API References
 
 - https://help.autodesk.com/cloudhelp/ENU/Fusion-360-API/files/fusion_Component_allAsBuiltJoints.htm
