@@ -2,7 +2,7 @@
 
 ## Contract
 
-- State: OBSERVED; production code is unchanged.
+- State: FIXED_IN_CONTROLLED_ENVIRONMENT; native target retry is pending.
 - Target: the native Fusion Script exporter, not a standalone mock application.
 - Observed result: ten readable fixed joints were rejected as disconnected.
 - The recorded edge list forms one tree with eleven vertices. Its root is a
@@ -56,3 +56,20 @@ snapshot, and `main` must not be promoted from an unverified candidate.
 - Root cause: robot-base naming does not distinguish a direct design-root
   occurrence from an internal occurrence of another exported link assembly.
 - Redacted failure output is retained in `FUE-BASE-ROOT-NAME-001-baseline.txt`.
+
+## Controlled Qualification
+
+- Public fix checkpoint: `0f38821df4245faff18e59711eb1bc9a811c4fa4`.
+- Public run: `base-link-scope-public-20261022T060320Z`; all 80 tests pass.
+- Private deployed-runtime snapshot: `2edbd679ec0fd72033df0e3ddd01c8eca533a7f2`.
+- Private run: `base-link-scope-integration-20261022T060331Z`; all 87 tests pass.
+- Both runners were clean Git worktrees; run manifests, process IDs, commands,
+  and source/test hashes were recorded before execution.
+- Change scope is two utility functions. Numeric Fusion copy suffixes are
+  recognized for root-level base occurrences. A nested occurrence identified by
+  its documented `fullPathName` hierarchy is not normalized to the robot base.
+- Joint orientation, transforms, geometry reuse, and Fusion CAD data are not
+  changed. Multiple top-level base candidates still stop with a name collision.
+- The public and private whole runtimes are not identical; the private snapshot
+  is used to qualify the actual installed Script files.
+- No native export, mesh rendering, or target success is claimed by these tests.
