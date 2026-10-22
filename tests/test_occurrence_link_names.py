@@ -66,4 +66,28 @@ class OccurrenceLinkNameTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    import hashlib
+    import importlib
+    import importlib.util
+    import json
+    from pathlib import Path
+    import sys
+
+    if len(sys.argv) == 2:
+        target = Path(sys.argv.pop()).resolve()
+        alias = 'occurrence_name_exporter_under_test'
+        spec = importlib.util.spec_from_file_location(
+            alias, target / '__init__.py', submodule_search_locations=[str(target)])
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[alias] = module
+        spec.loader.exec_module(module)
+        utils = importlib.import_module(alias + '.utils.utils')
+        Joint = importlib.import_module(alias + '.core.Joint')
+        code = utils.top_level_link_name.__code__
+        fingerprint = code.co_code + repr((code.co_consts, code.co_names)).encode('utf-8')
+        print(json.dumps({
+            'mode': 'fixtures_against_selected_files_not_a_Fusion_export',
+            'utils': utils.__file__, 'joint': Joint.__file__,
+            'name_function_sha256': hashlib.sha256(fingerprint).hexdigest(),
+        }), flush=True)
     unittest.main()
