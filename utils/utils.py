@@ -187,14 +187,25 @@ def occurrence_link_name(occs):
         return 'base_link'
 
 def top_level_link_name(occs):
-    """Return the URDF name of an independent top-level Fusion Component."""
+    """Keep semantic link names while distinguishing copied occurrences."""
     if is_base_link_occurrence(occs):
         return 'base_link'
     try:
         name = sanitize_link_name(occs.component.name)
     except:
         name = ''
-    return name or occurrence_link_name(occs)
+    if name:
+        # The first instance keeps its existing name; other copies retain their index.
+        for attribute in ('name', 'fullPathName'):
+            try:
+                instance = re.search(r':([0-9]+)$', str(getattr(occs, attribute)))
+            except:
+                continue
+            if instance:
+                number = instance.group(1)
+                return name if number == '1' else '{}_{}'.format(name, number)
+        return name
+    return occurrence_link_name(occs)
 
 def top_level_occurrences(root):
     """Return link-defining root occurrences without relying on allOccurrences."""
@@ -302,7 +313,7 @@ def validate_occurrence_link_names(root):
     if collisions:
         raise RuntimeError(
             'Multiple Fusion occurrences resolve to the same URDF link name.\n\n{}\n\n'
-            'Create separate top-level Fusion Components and give every Component a unique URDF link name.'
+            'Rename the conflicting Fusion occurrences so the resulting ASCII link names are unique.'
             .format('\n'.join(collisions))
         )
     return names
