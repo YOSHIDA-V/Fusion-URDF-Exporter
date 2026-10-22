@@ -1,0 +1,70 @@
+test_five_getter_failures_reproduce_exporter_endpoint_loss (__main__.ExistingFailureReproduction.test_five_getter_failures_reproduce_exporter_endpoint_loss) ... ok
+test_compares_api_entities_not_joint_names (__main__.JointDiagnosticsTests.test_compares_api_entities_not_joint_names) ... FAIL
+test_invalid_handle_is_not_probed (__main__.JointDiagnosticsTests.test_invalid_handle_is_not_probed) ... FAIL
+test_keeps_readable_endpoint_when_other_getter_raises (__main__.JointDiagnosticsTests.test_keeps_readable_endpoint_when_other_getter_raises) ... FAIL
+test_preserves_both_getter_errors (__main__.JointDiagnosticsTests.test_preserves_both_getter_errors) ... FAIL
+test_records_context_without_concatenating_paths (__main__.JointDiagnosticsTests.test_records_context_without_concatenating_paths) ... FAIL
+test_records_nonmembership_without_discarding_joint (__main__.JointDiagnosticsTests.test_records_nonmembership_without_discarding_joint) ... FAIL
+test_writes_hash_bound_read_only_audit (__main__.JointDiagnosticsTests.test_writes_hash_bound_read_only_audit) ... FAIL
+
+======================================================================
+FAIL: test_compares_api_entities_not_joint_names (__main__.JointDiagnosticsTests.test_compares_api_entities_not_joint_names)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_joint_diagnostics.py", line 65, in setUp
+    self.assertIsNotNone(Diagnostics, 'Joint ownership diagnostics are unavailable')
+AssertionError: unexpectedly None : Joint ownership diagnostics are unavailable
+
+======================================================================
+FAIL: test_invalid_handle_is_not_probed (__main__.JointDiagnosticsTests.test_invalid_handle_is_not_probed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_joint_diagnostics.py", line 65, in setUp
+    self.assertIsNotNone(Diagnostics, 'Joint ownership diagnostics are unavailable')
+AssertionError: unexpectedly None : Joint ownership diagnostics are unavailable
+
+======================================================================
+FAIL: test_keeps_readable_endpoint_when_other_getter_raises (__main__.JointDiagnosticsTests.test_keeps_readable_endpoint_when_other_getter_raises)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_joint_diagnostics.py", line 65, in setUp
+    self.assertIsNotNone(Diagnostics, 'Joint ownership diagnostics are unavailable')
+AssertionError: unexpectedly None : Joint ownership diagnostics are unavailable
+
+======================================================================
+FAIL: test_preserves_both_getter_errors (__main__.JointDiagnosticsTests.test_preserves_both_getter_errors)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_joint_diagnostics.py", line 65, in setUp
+    self.assertIsNotNone(Diagnostics, 'Joint ownership diagnostics are unavailable')
+AssertionError: unexpectedly None : Joint ownership diagnostics are unavailable
+
+======================================================================
+FAIL: test_records_context_without_concatenating_paths (__main__.JointDiagnosticsTests.test_records_context_without_concatenating_paths)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_joint_diagnostics.py", line 65, in setUp
+    self.assertIsNotNone(Diagnostics, 'Joint ownership diagnostics are unavailable')
+AssertionError: unexpectedly None : Joint ownership diagnostics are unavailable
+
+======================================================================
+FAIL: test_records_nonmembership_without_discarding_joint (__main__.JointDiagnosticsTests.test_records_nonmembership_without_discarding_joint)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_joint_diagnostics.py", line 65, in setUp
+    self.assertIsNotNone(Diagnostics, 'Joint ownership diagnostics are unavailable')
+AssertionError: unexpectedly None : Joint ownership diagnostics are unavailable
+
+======================================================================
+FAIL: test_writes_hash_bound_read_only_audit (__main__.JointDiagnosticsTests.test_writes_hash_bound_read_only_audit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_joint_diagnostics.py", line 65, in setUp
+    self.assertIsNotNone(Diagnostics, 'Joint ownership diagnostics are unavailable')
+AssertionError: unexpectedly None : Joint ownership diagnostics are unavailable
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.034s
+
+FAILED (failures=7)
+
