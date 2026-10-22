@@ -136,6 +136,15 @@ class Joint:
 def _clean_occurrence_name(root, occ):
     return utils.joint_endpoint_link_name(root, occ)
 
+def _safe_joint_name(joint):
+    try:
+        if getattr(joint, 'isValid', True) is not True:
+            return ''
+        return joint.name
+    except Exception:
+        return ''
+
+
 def _skipped_joint_entry(joint, source, reason):
     return {
         'type': 'fixed',
@@ -157,18 +166,25 @@ def _skipped_joint_entry(joint, source, reason):
         'skip_from_urdf': True,
         'skip_reason': reason,
         'diagnostic_only': True,
-        'fusion_joint_name': getattr(joint, 'name', '')
+        'fusion_joint_name': _safe_joint_name(joint)
     }
 
 def _safe_joint_occurrences(joint):
     try:
-        occurrence_one = joint.occurrenceOne
-        occurrence_two = joint.occurrenceTwo
-    except:
+        if getattr(joint, 'isValid', True) is not True:
+            return None, None
+    except Exception:
         return None, None
-    if occurrence_one is None or occurrence_two is None:
-        return None, None
-    return occurrence_one, occurrence_two
+    occurrences = []
+    for field in ('occurrenceOne', 'occurrenceTwo'):
+        try:
+            occurrence = getattr(joint, field)
+            if occurrence is not None and getattr(occurrence, 'isValid', True) is not True:
+                occurrence = None
+        except Exception:
+            occurrence = None
+        occurrences.append(occurrence)
+    return tuple(occurrences)
 
 def _iter_items(collection):
     try:
@@ -364,10 +380,20 @@ def _relative_occurrence_pose(child_occurrence, parent_occurrence):
     except:
         return None
 
-def _joint_entry(root, joint, source, msg):
+def _joint_entry(root, joint, source, msg, visible_link_names=None):
     occurrence_one, occurrence_two = _safe_joint_occurrences(joint)
     if occurrence_one is None or occurrence_two is None:
         return _skipped_joint_entry(joint, source, 'invalid_joint_occurrence'), msg
+
+    parent_name = _clean_occurrence_name(root, occurrence_two)
+    child_name = _clean_occurrence_name(root, occurrence_one)
+    if visible_link_names is not None and (
+        parent_name not in visible_link_names or child_name not in visible_link_names
+    ):
+        skipped = _skipped_joint_entry(joint, source, 'hidden_joint_occurrence')
+        skipped.update(original_parent=parent_name, original_child=child_name,
+                       parent=parent_name, child=child_name)
+        return skipped, msg
 
     joint_dict = {}
     motion_msg = _set_motion(joint, joint_dict, SUCCESS_MSG)
@@ -377,8 +403,8 @@ def _joint_entry(root, joint, source, msg):
         return _skipped_joint_entry(joint, source, 'unsupported_fusion_joint_type'), msg
 
     joint_dict['source'] = source
-    joint_dict['original_parent'] = _clean_occurrence_name(root, occurrence_two)
-    joint_dict['original_child'] = _clean_occurrence_name(root, occurrence_one)
+    joint_dict['original_parent'] = parent_name
+    joint_dict['original_child'] = child_name
     joint_dict['parent'] = joint_dict['original_parent']
     joint_dict['child'] = joint_dict['original_child']
     joint_dict['auto_swapped'] = False
@@ -485,6 +511,7 @@ def _orient_from_base_link(joints_dict):
 
 
 NONFATAL_URDF_OMISSION_REASONS = frozenset([
+    'invalid_joint_occurrence',
     'hidden_joint_occurrence',
     'overridden_by_urdf_joint',
     'same_link_joint',
@@ -499,6 +526,10 @@ def partition_skipped_joints(joints_dict):
     therefore omits one closure edge and records it as
     ``cycle_or_duplicate_parent``.  That omission is reportable but must not
     prevent the remaining tree from being exported.
+
+    Unreadable endpoint references are reportable under visible-only export.
+    The exporter must still check that all visible geometry has a valid path
+    from base_link before it creates any meshes.
     """
     reportable = []
     fatal = []
@@ -527,6 +558,8 @@ def make_joints_dict(root, msg):
     joint_type_counts = {}
     urdf_joint_by_child = {}
     urdf_joint_by_pair = {}
+    link_occurrences = utils.link_occurrence_map(root)
+    visible_link_names = set(link_occurrences) if link_occurrences else None
 
     for name, joint_dict in UrdfJoint.joint_entries(root):
         original_name = name
@@ -545,13 +578,13 @@ def make_joints_dict(root, msg):
 
     for joint in _all_fusion_joints(root):
         source = 'as_built' if type(joint) == adsk.fusion.AsBuiltJoint else 'joint'
-        joint_dict, msg = _joint_entry(root, joint, source, msg)
+        joint_dict, msg = _joint_entry(root, joint, source, msg, visible_link_names)
         if msg != SUCCESS_MSG:
             break
         if joint_dict is None:
             continue
 
-        joint_dict['fusion_joint_name'] = joint.name
+        joint_dict['fusion_joint_name'] = _safe_joint_name(joint)
         urdf_override_name = urdf_joint_by_child.get(joint_dict.get('child', ''))
         if urdf_override_name is None:
             urdf_override_name = urdf_joint_by_pair.get(frozenset([joint_dict.get('parent', ''), joint_dict.get('child', '')]))

@@ -72,8 +72,12 @@ def run(context, entrypoint_file=None):
             return 0   
 
         reportable_skipped, fatal_skipped = Joint.partition_skipped_joints(all_joints_dict)
-        if fatal_skipped:
+        unresolved_references = [name for name in reportable_skipped
+                                 if all_joints_dict[name].get('skip_reason') == 'invalid_joint_occurrence']
+        audit_path = None
+        if fatal_skipped or unresolved_references:
             audit_path = JointDiagnostics.write_audit(root, caller_file=Joint.__file__)
+        if fatal_skipped:
             report_file, csv_file = Write.write_joint_tree_report(all_joints_dict, {}, save_dir)
             details = [
                 '{}: {}'.format(joint, all_joints_dict[joint].get('skip_reason', 'unknown'))
@@ -183,12 +187,14 @@ def run(context, entrypoint_file=None):
         utils.remove_generated_reports(save_dir, preserve_joint_tree=bool(reportable_skipped))
         viewer_url = Write.open_web_viewer(viewer_html)
         if reportable_skipped:
-            msg += '\n\nURDF tree omissions (see joint_tree_report.txt):\n{}'.format(
+            msg += '\n\nURDF tree omissions:\n{}'.format(
                 '\n'.join([
                     '{}: {}'.format(joint, all_joints_dict[joint].get('skip_reason', 'unknown'))
                     for joint in reportable_skipped
                 ])
             )
+        if audit_path:
+            msg += '\n\nOwnership diagnostics:\n{}'.format(audit_path)
         msg += '\n\nModel viewer opened:\n{}'.format(viewer_url)
         utils.write_runtime_status(save_dir, runtime_identity, 'complete')
         ui.messageBox(msg, title)
