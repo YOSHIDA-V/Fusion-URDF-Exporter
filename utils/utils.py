@@ -148,9 +148,16 @@ def is_base_link_name(name):
         leaf_name = str(name).split('+')[-1]
     except:
         return False
-    return leaf_name in ('base_link', 'base_link:1', 'base_link1')
+    return (leaf_name in ('base_link', 'base_link:1', 'base_link1')
+            or re.fullmatch(r'base_link \([1-9][0-9]*\)(?::[1-9][0-9]*)?', leaf_name) is not None)
 
 def is_base_link_occurrence(occs):
+    # A nested member belongs to its enclosing link, not the robot base.
+    try:
+        if '+' in str(occs.fullPathName):
+            return False
+    except:
+        pass
     candidates = []
     try:
         candidates.append(occs.component.name)
