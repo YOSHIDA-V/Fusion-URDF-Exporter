@@ -187,7 +187,7 @@ def occurrence_link_name(occs):
         return 'base_link'
 
 def top_level_link_name(occs):
-    """Return the semantic URDF name of a top-level Fusion link component."""
+    """Return the URDF name of an independent top-level Fusion Component."""
     if is_base_link_occurrence(occs):
         return 'base_link'
     try:
@@ -281,10 +281,28 @@ def validate_occurrence_link_names(root):
         unique_sources = sorted(set(source_names))
         if len(unique_sources) > 1 or (link_name == 'base_link' and len(source_names) > 1):
             collisions.append('{} <= {}'.format(link_name, ', '.join(unique_sources)))
+
+    top_level_names = {}
+    for occs in top_level_occurrences(root):
+        is_base_link = is_base_link_occurrence(occs)
+        if not is_base_link and not _is_exportable_occurrence(occs):
+            continue
+        link_name = top_level_link_name(occs)
+        try:
+            source_name = occs.fullPathName or occs.name
+        except:
+            source_name = link_name
+        top_level_names.setdefault(link_name, []).append(source_name)
+    for link_name, source_names in sorted(top_level_names.items()):
+        unique_sources = sorted(set(source_names))
+        if len(source_names) > 1:
+            detail = '{} <= {}'.format(link_name, ', '.join(unique_sources))
+            if detail not in collisions:
+                collisions.append(detail)
     if collisions:
         raise RuntimeError(
             'Multiple Fusion occurrences resolve to the same URDF link name.\n\n{}\n\n'
-            'Rename the Fusion components/occurrences so every URDF link name is unique.'
+            'Create separate top-level Fusion Components and give every Component a unique URDF link name.'
             .format('\n'.join(collisions))
         )
     return names
@@ -364,6 +382,12 @@ def visible_geometry_link_names(root, target_link_names=None):
     for occs in top_level_occurrences(root):
         visit(occs, True)
     return link_names
+
+def disconnected_visible_geometry_links(root, target_link_names):
+    """Return visible geometry links that have no edge in the URDF joint tree."""
+    target_link_names = set(target_link_names)
+    visible_links = visible_geometry_link_names(root, target_link_names)
+    return sorted(visible_links - target_link_names)
 
 def export_link_sources(root, target_link_names=None):
     """Select top-level link assemblies and their grouped visible bodies."""
