@@ -3,7 +3,7 @@
 import unittest
 
 from test_export_logic import (
-    DisabledLimits, FusionJoint, Joint, Occurrence, Root, utils,
+    DisabledLimits, FusionJoint, Joint, Occurrence, Point, Root, utils,
 )
 
 
@@ -77,6 +77,7 @@ class VisibleJointExportTests(unittest.TestCase):
         class UnlimitedSlider:
             jointType = 2
             slideLimits = DisabledLimits()
+            slideDirectionVector = Point((0.0, 0.0, 1.0))
 
         hidden = Occurrence('hidden_part', 'hidden_part:1', visible=False)
         root = Root([self.base, self.part, hidden], joints=[self.valid, FusionJoint(
@@ -94,7 +95,8 @@ class VisibleJointExportTests(unittest.TestCase):
 
     def test_hidden_nested_mount_does_not_hide_its_visible_link_assembly(self):
         mount = Occurrence('mount', 'visible_part:1+mount:1', visible=False)
-        self.part.childOccurrences.items.append(mount)
+        self.part = Occurrence('visible_part', 'visible_part:1',
+                               bodies=[object()], children=[mount])
         root = Root([self.base, self.part], joints=[
             FusionJoint('assembly_connection', mount, self.base)])
         joints = self.make(root)
