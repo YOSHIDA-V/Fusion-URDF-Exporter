@@ -1,0 +1,197 @@
+test_canonical_top_level_base_does_not_collide_with_nested_base (test_base_link_scope.BaseLinkScopeTests.test_canonical_top_level_base_does_not_collide_with_nested_base) ... ERROR
+test_copied_top_level_base_does_not_collide_with_nested_bases (test_base_link_scope.BaseLinkScopeTests.test_copied_top_level_base_does_not_collide_with_nested_bases) ... ok
+test_existing_base_aliases_remain_supported (test_base_link_scope.BaseLinkScopeTests.test_existing_base_aliases_remain_supported) ... ok
+test_export_sources_keep_all_eleven_links_and_nested_bodies (test_base_link_scope.BaseLinkScopeTests.test_export_sources_keep_all_eleven_links_and_nested_bodies) ... FAIL
+test_hidden_member_body_is_not_exported (test_base_link_scope.BaseLinkScopeTests.test_hidden_member_body_is_not_exported) ... ok
+test_link_map_selects_the_top_level_base_occurrence (test_base_link_scope.BaseLinkScopeTests.test_link_map_selects_the_top_level_base_occurrence) ... FAIL
+test_nested_base_alone_does_not_create_a_robot_root (test_base_link_scope.BaseLinkScopeTests.test_nested_base_alone_does_not_create_a_robot_root) ... ok
+test_nested_base_names_are_not_robot_bases (test_base_link_scope.BaseLinkScopeTests.test_nested_base_names_are_not_robot_bases) ... 
+  test_nested_base_names_are_not_robot_bases (test_base_link_scope.BaseLinkScopeTests.test_nested_base_names_are_not_robot_bases) (path='bumper:1+base_link:1') ... FAIL
+test_nested_endpoint_stays_attached_to_its_enclosing_bumper (test_base_link_scope.BaseLinkScopeTests.test_nested_endpoint_stays_attached_to_its_enclosing_bumper) ... ok
+test_nested_members_keep_their_occurrence_path_identity (test_base_link_scope.BaseLinkScopeTests.test_nested_members_keep_their_occurrence_path_identity) ... 
+  test_nested_members_keep_their_occurrence_path_identity (test_base_link_scope.BaseLinkScopeTests.test_nested_members_keep_their_occurrence_path_identity) (path='bumper:1+base_link:1') ... FAIL
+test_nested_visible_base_body_stays_in_its_bumper_link (test_base_link_scope.BaseLinkScopeTests.test_nested_visible_base_body_stays_in_its_bumper_link) ... 
+  test_nested_visible_base_body_stays_in_its_bumper_link (test_base_link_scope.BaseLinkScopeTests.test_nested_visible_base_body_stays_in_its_bumper_link) (path='bumper:1') ... FAIL
+test_ten_fixed_joints_form_one_tree_from_the_top_level_base (test_base_link_scope.BaseLinkScopeTests.test_ten_fixed_joints_form_one_tree_from_the_top_level_base) ... FAIL
+test_top_level_fusion_copy_name_is_canonical_base (test_base_link_scope.BaseLinkScopeTests.test_top_level_fusion_copy_name_is_canonical_base) ... FAIL
+test_two_top_level_base_candidates_are_rejected (test_base_link_scope.BaseLinkScopeTests.test_two_top_level_base_candidates_are_rejected) ... FAIL
+test_unrelated_component_names_are_not_promoted_to_base (test_base_link_scope.BaseLinkScopeTests.test_unrelated_component_names_are_not_promoted_to_base) ... ok
+test_all_missing_prismatic_limits_are_reported (test_export_logic.ExportLogicTests.test_all_missing_prismatic_limits_are_reported) ... ok
+test_assembly_occurrence_can_be_flattened_into_one_link (test_export_logic.ExportLogicTests.test_assembly_occurrence_can_be_flattened_into_one_link) ... ok
+test_base_link_and_base_link_instance_suffix_collision_is_rejected (test_export_logic.ExportLogicTests.test_base_link_and_base_link_instance_suffix_collision_is_rejected) ... ok
+test_base_link_instance_suffix_is_canonicalized (test_export_logic.ExportLogicTests.test_base_link_instance_suffix_is_canonicalized) ... ok
+test_closed_loop_omission_is_nonfatal_but_other_tree_failures_remain_fatal (test_export_logic.ExportLogicTests.test_closed_loop_omission_is_nonfatal_but_other_tree_failures_remain_fatal) ... ok
+test_continuous_joint_without_geometry_uses_geometry_transform (test_export_logic.ExportLogicTests.test_continuous_joint_without_geometry_uses_geometry_transform) ... ok
+test_custom_joint_supports_mimic_and_control_limits (test_export_logic.ExportLogicTests.test_custom_joint_supports_mimic_and_control_limits) ... ok
+test_display_launch_is_ros2_python_launch (test_export_logic.ExportLogicTests.test_display_launch_is_ros2_python_launch) ... ok
+test_export_package_validator_accepts_clean_package (test_export_logic.ExportLogicTests.test_export_package_validator_accepts_clean_package) ... ok
+test_export_package_validator_ignores_transmission_joints (test_export_logic.ExportLogicTests.test_export_package_validator_ignores_transmission_joints) ... ok
+test_export_package_validator_rejects_unsafe_names (test_export_logic.ExportLogicTests.test_export_package_validator_rejects_unsafe_names) ... ok
+test_export_package_validator_synthesizes_missing_reports (test_export_logic.ExportLogicTests.test_export_package_validator_synthesizes_missing_reports) ... ok
+test_export_package_validator_uses_package_xml_name (test_export_logic.ExportLogicTests.test_export_package_validator_uses_package_xml_name) ... ok
+test_fixed_joint_without_origin_prefers_transform2 (test_export_logic.ExportLogicTests.test_fixed_joint_without_origin_prefers_transform2) ... ok
+test_fixed_joint_without_origin_uses_relative_occurrence_pose (test_export_logic.ExportLogicTests.test_fixed_joint_without_origin_uses_relative_occurrence_pose) ... ok
+test_fusion_component2_is_urdf_parent_and_component1_is_child (test_export_logic.ExportLogicTests.test_fusion_component2_is_urdf_parent_and_component1_is_child) ... ok
+test_hidden_base_link_is_still_recognized_as_structural_root (test_export_logic.ExportLogicTests.test_hidden_base_link_is_still_recognized_as_structural_root) ... ok
+test_hidden_occurrence_keeps_joint_structure (test_export_logic.ExportLogicTests.test_hidden_occurrence_keeps_joint_structure) ... ok
+test_invalid_fusion_joint_is_reported_instead_of_crashing (test_export_logic.ExportLogicTests.test_invalid_fusion_joint_is_reported_instead_of_crashing) ... ok
+test_invalid_urdf_joint_is_reported_as_diagnostic (test_export_logic.ExportLogicTests.test_invalid_urdf_joint_is_reported_as_diagnostic) ... ok
+test_linked_fusion_copies_keep_distinct_link_names_but_share_part_key (test_export_logic.ExportLogicTests.test_linked_fusion_copies_keep_distinct_link_names_but_share_part_key) ... ok
+test_mesh_is_not_reused_when_shape_key_differs (test_export_logic.ExportLogicTests.test_mesh_is_not_reused_when_shape_key_differs) ... ok
+test_mesh_reuse_only_for_translation_equivalent_same_part_key (test_export_logic.ExportLogicTests.test_mesh_reuse_only_for_translation_equivalent_same_part_key) ... ok
+test_nested_joint_endpoints_resolve_to_top_level_link_components (test_export_logic.ExportLogicTests.test_nested_joint_endpoints_resolve_to_top_level_link_components) ... ok
+test_nested_target_link_is_not_double_counted_in_parent_link (test_export_logic.ExportLogicTests.test_nested_target_link_is_not_double_counted_in_parent_link) ... ok
+test_occurrence_material_color_is_exported_to_web_viewer_urdf (test_export_logic.ExportLogicTests.test_occurrence_material_color_is_exported_to_web_viewer_urdf) ... ok
+test_reversed_revolute_joint_flips_axis_and_limits (test_export_logic.ExportLogicTests.test_reversed_revolute_joint_flips_axis_and_limits) ... ok
+test_roboviez_addin_has_manifest_and_run_stop_entrypoints (test_export_logic.ExportLogicTests.test_roboviez_addin_has_manifest_and_run_stop_entrypoints) ... ok
+test_roboviez_script_has_manifest_and_identifiable_entrypoint (test_export_logic.ExportLogicTests.test_roboviez_script_has_manifest_and_identifiable_entrypoint) ... ok
+test_roboviez_top_level_components_define_link_names_and_preflight (test_export_logic.ExportLogicTests.test_roboviez_top_level_components_define_link_names_and_preflight) ... ok
+test_runtime_status_identifies_loaded_files_and_phase (test_export_logic.ExportLogicTests.test_runtime_status_identifies_loaded_files_and_phase) ... ok
+test_same_link_joint_without_origin_is_ignored (test_export_logic.ExportLogicTests.test_same_link_joint_without_origin_is_ignored) ... ok
+test_sanitized_occurrence_name_collision_is_rejected (test_export_logic.ExportLogicTests.test_sanitized_occurrence_name_collision_is_rejected) ... ok
+test_success_cleanup_preserves_joint_tree_when_urdf_omits_a_closed_loop (test_export_logic.ExportLogicTests.test_success_cleanup_preserves_joint_tree_when_urdf_omits_a_closed_loop) ... ok
+test_success_cleanup_removes_all_generated_reports (test_export_logic.ExportLogicTests.test_success_cleanup_removes_all_generated_reports) ... ok
+test_unsupported_fusion_joint_is_diagnostic (test_export_logic.ExportLogicTests.test_unsupported_fusion_joint_is_diagnostic) ... ok
+test_urdf_joint_attribute_is_used_as_joint_source (test_export_logic.ExportLogicTests.test_urdf_joint_attribute_is_used_as_joint_source) ... ok
+test_urdf_joint_overrides_fusion_joint_for_same_child (test_export_logic.ExportLogicTests.test_urdf_joint_overrides_fusion_joint_for_same_child) ... ok
+test_virtual_links_are_reported_as_meshless_intentional_links (test_export_logic.ExportLogicTests.test_virtual_links_are_reported_as_meshless_intentional_links) ... ok
+test_web_viewer_embeds_urdf_and_mesh_data (test_export_logic.ExportLogicTests.test_web_viewer_embeds_urdf_and_mesh_data) ... ok
+test_web_viewer_export_removes_legacy_vscode_preview (test_export_logic.ExportLogicTests.test_web_viewer_export_removes_legacy_vscode_preview) ... ok
+test_web_viewer_opens_self_contained_file_without_local_server (test_export_logic.ExportLogicTests.test_web_viewer_opens_self_contained_file_without_local_server) ... ok
+test_failed_getter_does_not_discard_the_readable_endpoint (test_joint_diagnostics.ExistingFailureReproduction.test_failed_getter_does_not_discard_the_readable_endpoint) ... ok
+test_compares_api_entities_not_joint_names (test_joint_diagnostics.JointDiagnosticsTests.test_compares_api_entities_not_joint_names) ... ok
+test_invalid_handle_is_not_probed (test_joint_diagnostics.JointDiagnosticsTests.test_invalid_handle_is_not_probed) ... ok
+test_keeps_readable_endpoint_when_other_getter_raises (test_joint_diagnostics.JointDiagnosticsTests.test_keeps_readable_endpoint_when_other_getter_raises) ... ok
+test_preserves_both_getter_errors (test_joint_diagnostics.JointDiagnosticsTests.test_preserves_both_getter_errors) ... ok
+test_records_context_without_concatenating_paths (test_joint_diagnostics.JointDiagnosticsTests.test_records_context_without_concatenating_paths) ... ok
+test_records_nonmembership_without_discarding_joint (test_joint_diagnostics.JointDiagnosticsTests.test_records_nonmembership_without_discarding_joint) ... ok
+test_writes_hash_bound_read_only_audit (test_joint_diagnostics.JointDiagnosticsTests.test_writes_hash_bound_read_only_audit) ... ok
+test_default_semantic_names_and_mesh_part_identity_are_preserved (test_occurrence_link_names.OccurrenceLinkNameTests.test_default_semantic_names_and_mesh_part_identity_are_preserved) ... ok
+test_distinct_occurrences_pass_name_preflight (test_occurrence_link_names.OccurrenceLinkNameTests.test_distinct_occurrences_pass_name_preflight) ... ok
+test_export_sources_keep_each_body_in_its_own_link (test_occurrence_link_names.OccurrenceLinkNameTests.test_export_sources_keep_each_body_in_its_own_link) ... ok
+test_japanese_component_name_keeps_distinct_instance_numbers (test_occurrence_link_names.OccurrenceLinkNameTests.test_japanese_component_name_keeps_distinct_instance_numbers) ... ok
+test_joints_keep_four_distinct_children_and_their_origins (test_occurrence_link_names.OccurrenceLinkNameTests.test_joints_keep_four_distinct_children_and_their_origins) ... ok
+test_link_map_retains_all_four_occurrence_objects (test_occurrence_link_names.OccurrenceLinkNameTests.test_link_map_retains_all_four_occurrence_objects) ... ok
+test_disconnected_readable_tree_stays_fatal (test_visible_joint_export.VisibleJointExportTests.test_disconnected_readable_tree_stays_fatal) ... ok
+test_five_unreadable_refs_do_not_stop_a_complete_visible_tree (test_visible_joint_export.VisibleJointExportTests.test_five_unreadable_refs_do_not_stop_a_complete_visible_tree) ... ok
+test_hidden_component_joint_is_omitted (test_visible_joint_export.VisibleJointExportTests.test_hidden_component_joint_is_omitted) ... ok
+test_hidden_joint_does_not_require_motion_limits (test_visible_joint_export.VisibleJointExportTests.test_hidden_joint_does_not_require_motion_limits) ... ok
+test_hidden_nested_mount_does_not_hide_its_visible_link_assembly (test_visible_joint_export.VisibleJointExportTests.test_hidden_nested_mount_does_not_hide_its_visible_link_assembly) ... ok
+test_hiding_joint_glyph_does_not_remove_visible_model_connection (test_visible_joint_export.VisibleJointExportTests.test_hiding_joint_glyph_does_not_remove_visible_model_connection) ... ok
+test_invalid_motion_stays_fatal (test_visible_joint_export.VisibleJointExportTests.test_invalid_motion_stays_fatal) ... ok
+test_readable_but_invalid_occurrence_handle_is_rejected (test_visible_joint_export.VisibleJointExportTests.test_readable_but_invalid_occurrence_handle_is_rejected) ... ok
+test_visible_part_with_only_unreadable_connection_is_reported_missing (test_visible_joint_export.VisibleJointExportTests.test_visible_part_with_only_unreadable_connection_is_reported_missing) ... ok
+
+======================================================================
+ERROR: test_canonical_top_level_base_does_not_collide_with_nested_base (test_base_link_scope.BaseLinkScopeTests.test_canonical_top_level_base_does_not_collide_with_nested_base)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_base_link_scope.py", line 69, in test_canonical_top_level_base_does_not_collide_with_nested_base
+    utils.validate_occurrence_link_names(self.root)
+  File "<candidate>\utils\utils.py", line 314, in validate_occurrence_link_names
+    raise RuntimeError(
+RuntimeError: Multiple Fusion occurrences resolve to the same URDF link name.
+
+base_link <= base_link:1, bumper:1+base_link:1
+
+Rename the conflicting Fusion occurrences so the resulting ASCII link names are unique.
+
+======================================================================
+FAIL: test_export_sources_keep_all_eleven_links_and_nested_bodies (test_base_link_scope.BaseLinkScopeTests.test_export_sources_keep_all_eleven_links_and_nested_bodies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_base_link_scope.py", line 100, in test_export_sources_keep_all_eleven_links_and_nested_bodies
+    self.assertEqual({entry['export_name'] for entry in sources}, self.expected_links)
+AssertionError: Items in the second set but not the first:
+'base_link'
+
+======================================================================
+FAIL: test_link_map_selects_the_top_level_base_occurrence (test_base_link_scope.BaseLinkScopeTests.test_link_map_selects_the_top_level_base_occurrence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_base_link_scope.py", line 73, in test_link_map_selects_the_top_level_base_occurrence
+    self.assertEqual(set(mapping), self.expected_links)
+AssertionError: Items in the first set but not the second:
+'base_link__4'
+Items in the second set but not the first:
+'base_link'
+
+======================================================================
+FAIL: test_nested_base_names_are_not_robot_bases (test_base_link_scope.BaseLinkScopeTests.test_nested_base_names_are_not_robot_bases) (path='bumper:1+base_link:1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_base_link_scope.py", line 53, in test_nested_base_names_are_not_robot_bases
+    self.assertFalse(utils.is_base_link_occurrence(member))
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_nested_members_keep_their_occurrence_path_identity (test_base_link_scope.BaseLinkScopeTests.test_nested_members_keep_their_occurrence_path_identity) (path='bumper:1+base_link:1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_base_link_scope.py", line 58, in test_nested_members_keep_their_occurrence_path_identity
+    self.assertEqual(utils.occurrence_link_name(member),
+AssertionError: 'base_link' != 'bumper_1_base_link_1'
+- base_link
++ bumper_1_base_link_1
+
+
+======================================================================
+FAIL: test_nested_visible_base_body_stays_in_its_bumper_link (test_base_link_scope.BaseLinkScopeTests.test_nested_visible_base_body_stays_in_its_bumper_link) (path='bumper:1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_base_link_scope.py", line 95, in test_nested_visible_base_body_stays_in_its_bumper_link
+    self.assertEqual(utils.grouped_visible_bodies(bumper, self.expected_links),
+AssertionError: Lists differ: [<object object at 0x00000155EB895C00>] != [<object object at 0x00000155EB895C00>, <object object at 0x00000155EB895BE0>]
+
+Second list contains 1 additional elements.
+First extra element 1:
+<object object at 0x00000155EB895BE0>
+
+- [<object object at 0x00000155EB895C00>]
++ [<object object at 0x00000155EB895C00>, <object object at 0x00000155EB895BE0>]
+
+======================================================================
+FAIL: test_ten_fixed_joints_form_one_tree_from_the_top_level_base (test_base_link_scope.BaseLinkScopeTests.test_ten_fixed_joints_form_one_tree_from_the_top_level_base)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_base_link_scope.py", line 81, in test_ten_fixed_joints_form_one_tree_from_the_top_level_base
+    self.assertEqual(fatal, [])
+AssertionError: Lists differ: ['fixed_joint_01', 'fixed_joint_02', 'fixe[133 chars]_10'] != []
+
+First list contains 10 additional elements.
+First extra element 0:
+'fixed_joint_01'
+
++ []
+- ['fixed_joint_01',
+-  'fixed_joint_02',
+-  'fixed_joint_03',
+-  'fixed_joint_04',
+-  'fixed_joint_05',
+-  'fixed_joint_06',
+-  'fixed_joint_07',
+-  'fixed_joint_08',
+-  'fixed_joint_09',
+-  'fixed_joint_10']
+
+======================================================================
+FAIL: test_top_level_fusion_copy_name_is_canonical_base (test_base_link_scope.BaseLinkScopeTests.test_top_level_fusion_copy_name_is_canonical_base)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_base_link_scope.py", line 40, in test_top_level_fusion_copy_name_is_canonical_base
+    self.assertTrue(utils.is_base_link_occurrence(self.base))
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_two_top_level_base_candidates_are_rejected (test_base_link_scope.BaseLinkScopeTests.test_two_top_level_base_candidates_are_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<candidate>\tests\test_base_link_scope.py", line 112, in test_two_top_level_base_candidates_are_rejected
+    with self.assertRaisesRegex(RuntimeError, 'same URDF link name'):
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 80 tests in 9.984s
+
+FAILED (failures=8, errors=1)
+
