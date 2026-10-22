@@ -5,7 +5,7 @@ import adsk, adsk.core, adsk.fusion, traceback
 import os
 import sys
 from .utils import utils
-from .core import Link, Joint, Write
+from .core import Link, Joint, Write, JointDiagnostics
 from .tools import validate_export_package
 
 """
@@ -55,7 +55,7 @@ def run(context, entrypoint_file=None):
 
         runtime_identity = utils.make_runtime_identity(
             entrypoint_file or __file__,
-            [__file__, Joint.__file__, Link.__file__, Write.__file__, utils.__file__, validate_export_package.__file__],
+            [__file__, Joint.__file__, JointDiagnostics.__file__, Link.__file__, Write.__file__, utils.__file__, validate_export_package.__file__],
         )
         utils.write_runtime_status(save_dir, runtime_identity, 'joint_preflight')
 
@@ -73,14 +73,15 @@ def run(context, entrypoint_file=None):
 
         reportable_skipped, fatal_skipped = Joint.partition_skipped_joints(all_joints_dict)
         if fatal_skipped:
+            audit_path = JointDiagnostics.write_audit(root, caller_file=Joint.__file__)
             report_file, csv_file = Write.write_joint_tree_report(all_joints_dict, {}, save_dir)
             details = [
                 '{}: {}'.format(joint, all_joints_dict[joint].get('skip_reason', 'unknown'))
                 for joint in fatal_skipped
             ]
             raise RuntimeError(
-                'URDF export stopped because Fusion joints could not be represented safely.\n\n{}\n\nReport:\n{}\n{}'
-                .format('\n'.join(details), report_file, csv_file)
+                'URDF export stopped because Fusion joints could not be represented safely.\n\n{}\n\nReport:\n{}\n{}\n\nOwnership diagnostics:\n{}'
+                .format('\n'.join(details), report_file, csv_file, audit_path)
             )
 
         joints_dict = {
