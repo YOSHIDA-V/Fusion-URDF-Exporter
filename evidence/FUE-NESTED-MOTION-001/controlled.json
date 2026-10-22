@@ -1,0 +1,41 @@
+{
+  "issue_id": "FUE-NESTED-MOTION-001",
+  "state": "FIXED_IN_CONTROLLED_ENVIRONMENT",
+  "candidate_commit": "b5428aa33d10508b7c730501ca66b707bb5df157",
+  "clean_worktree": true,
+  "command": "python -B -X utf8 -m unittest discover -s tests -p test_*.py -v",
+  "started_at_utc": "2026-10-22T07:19:32.7319289Z",
+  "completed_at_utc": "2026-10-22T07:19:38.0928040Z",
+  "pid": 23132,
+  "utils_sha256": "c1a4b6fdd81944463d823c6bfd605fc8042d0f08eaf2546eba0bb6866bc3334b",
+  "joint_sha256": "902376964a1eec04bb0f8cfc89bc2a6fb4cb8e6baa3cd7b51a159682601a053d",
+  "test_sha256": "2e76e79b66f32c83106f69d1db78029f2943837ba14864527580124ff288f310",
+  "results": {
+    "tests_run": 100,
+    "exit_code": 0,
+    "nested_motion_tests": 20,
+    "active_prismatic_joints": 12,
+    "connected_links": 23,
+    "active_fixed_joints": 10,
+    "visible_bodies": 31,
+    "duplicated_bodies": 0,
+    "prismatic_range_m": [-0.002, 0.0]
+  },
+  "implementation": [
+    "Keep internal moving endpoints as occurrence-specific link boundaries.",
+    "Preserve an unambiguous external attachment member in the existing enclosing assembly link.",
+    "Use the same boundary map for joint endpoints and visible-body ownership.",
+    "Traverse nested export sources and geometry preflight without duplicating bodies."
+  ],
+  "preserved": [
+    "Top-level robot base naming and copied occurrence identity",
+    "Fixed-only nested assembly grouping",
+    "Visible-only export and hidden joint glyph behavior",
+    "Existing direction and limit reversal behavior",
+    "Failure on missing limits and unsupported motion",
+    "Mesh reuse and viewer architecture unchanged"
+  ],
+  "native_fusion_export_verified": false,
+  "rendered_slider_controls_verified": false,
+  "main_promoted": false
+}
