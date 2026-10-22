@@ -135,7 +135,7 @@ class JointDiagnosticsTests(unittest.TestCase):
 
 
 class ExistingFailureReproduction(unittest.TestCase):
-    def test_five_getter_failures_reproduce_exporter_endpoint_loss(self):
+    def test_failed_getter_does_not_discard_the_readable_endpoint(self):
         owner = Component('assembly')
         base = Placement('base_link:1')
         joints = [JointHandle('rigid_03', owner,
@@ -144,7 +144,7 @@ class ExistingFailureReproduction(unittest.TestCase):
                                   RuntimeError('occPath2.valid()'))
                       for index in range(4, 8))
         self.assertEqual([Joint._safe_joint_occurrences(item) for item in joints],
-                         [(None, None)] * 5)
+                         [(None, base)] + [(base, None)] * 4)
 
 
 if __name__ == '__main__':

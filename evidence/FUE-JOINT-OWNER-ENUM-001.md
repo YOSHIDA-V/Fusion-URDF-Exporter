@@ -57,6 +57,26 @@
 - The failure-only hook preserves the existing unsafe-joint stop. It writes
   observations outside the exported package, not into the CAD document.
 
+## Native Observation And User Contract Amendment
+
+- Actual diagnostic run: FUE-RUNTIME-20261022T022159Z-50144.
+- Audit ID: FUE-JOINT-AUDIT-1397f544bb5b4e7bb59c8e3b2d923924.
+- The five unreadable joints belong to the root component, are native rather
+  than proxies, and are present in its direct 17-item AsBuiltJoints collection.
+  The aggregate has 33 items. The aggregate-only hypothesis is disproven.
+- All five isVisible getters raise InternalValidationError: parentAssyConstraints;
+  one occurrenceOne and four occurrenceTwo getters fail. Their handles report
+  isValid true and isSuppressed false. Actual model names remain private.
+- The user then explicitly requested visible-model-only export even when
+  removed-model references remain. It is NOT proven that these five were deleted.
+- Amended pass criteria: record and omit unreadable endpoint references;
+  include only visible link occurrences/bodies; never use joint-glyph visibility
+  as geometry visibility; require every visible geometry link to remain reachable
+  through valid existing connections. Missing visible links, unsupported motion,
+  and disconnected valid joint groups must still stop export.
+- No guessed links, automatic fixed joints, CAD deletion or preview APIs.
+- This is a user-requested contract change, not a silent weakening of a test.
+
 ## API References
 
 - https://help.autodesk.com/cloudhelp/ENU/Fusion-360-API/files/fusion_Component_allAsBuiltJoints.htm
