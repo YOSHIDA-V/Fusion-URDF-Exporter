@@ -224,52 +224,113 @@ def top_level_occurrences(root):
         except:
             return []
 
-def joint_endpoint_link_name(root, occs):
-    """Return the top-level link occurrence that contains a Joint endpoint.
+def _nested_joint_link_occurrences(root, top_occurrences):
+    """Keep moving members separate from their enclosing assembly link."""
+    top_paths = {str(occ.fullPathName) for occ in top_occurrences
+                 if _is_exportable_occurrence(occ)}
+    joints = []
+    for field, fallback in (('allJoints', 'joints'), ('allAsBuiltJoints', 'asBuiltJoints')):
+        try:
+            joints.extend(list(getattr(root, field)))
+        except Exception:
+            try:
+                joints.extend(list(getattr(root, fallback)))
+            except Exception:
+                pass
+
+    moving = {}
+    attachments = {}
+    for joint in joints:
+        try:
+            if getattr(joint, 'isValid', True) is not True:
+                continue
+            one, two = joint.occurrenceOne, joint.occurrenceTwo
+            if one is None or two is None:
+                continue
+            if any(getattr(occ, 'isValid', True) is not True for occ in (one, two)):
+                continue
+            one_path, two_path = str(one.fullPathName), str(two.fullPathName)
+            one_top, two_top = one_path.split('+')[0], two_path.split('+')[0]
+            if one_top not in top_paths or two_top not in top_paths:
+                continue
+            if one_top != two_top:
+                attachments.setdefault(one_top, []).append(one_path)
+                attachments.setdefault(two_top, []).append(two_path)
+            elif (one_path != two_path and is_visible(one) and is_visible(two)
+                  and joint.jointMotion.jointType in (1, 2)):
+                members = moving.setdefault(one_top, {})
+                members[one_path] = one
+                members[two_path] = two
+        except Exception:
+            # The existing joint preflight reports unreadable or unsupported motion.
+            continue
+
+    occurrences = []
+    for top_path, members in moving.items():
+        anchors = set()
+        for attachment in attachments.get(top_path, []):
+            matches = [path for path in members
+                       if attachment == path or attachment.startswith(path + '+')]
+            if matches:
+                anchors.add(max(matches, key=len))
+        # Only an unambiguous, actual external attachment defines the static member.
+        anchor = next(iter(anchors)) if len(anchors) == 1 else None
+        occurrences.extend(occ for path, occ in members.items()
+                           if path != top_path and path != anchor)
+    return occurrences
+
+
+def _link_occurrence_candidates(root):
+    top_occurrences = top_level_occurrences(root)
+    candidates = [(top_level_link_name(occ), occ) for occ in top_occurrences]
+    candidates.extend((occurrence_link_name(occ), occ)
+                      for occ in _nested_joint_link_occurrences(root, top_occurrences))
+    return candidates
+
+
+def joint_endpoint_link_name(root, occs, link_occurrences=None):
+    """Return the deepest exported link occurrence containing a Joint endpoint.
 
     Fusion Joints can reference a nested servo or horn occurrence even when the
     URDF link is represented by its enclosing top-level assembly occurrence.
-    Keep the nested occurrence as a fallback for designs that do not expose a
-    matching top-level occurrence.
+    A nested moving member remains a separate link. Other nested parts stay in
+    their containing assembly, including that assembly's external attachment.
     """
     try:
         endpoint_path = str(occs.fullPathName)
     except:
         endpoint_path = ''
 
-    try:
-        top_occurrences = [root.occurrences.item(i) for i in range(root.occurrences.count)]
-    except:
-        top_occurrences = []
+    if link_occurrences is None:
+        link_occurrences = link_occurrence_map(root)
 
-    containing_occurrence = None
+    containing_link = None
     containing_path = ''
-    for top_occurrence in top_occurrences:
+    for link_name, link_occurrence in link_occurrences.items():
         try:
-            top_path = str(top_occurrence.fullPathName)
+            link_path = str(link_occurrence.fullPathName)
         except:
-            top_path = ''
-        if not top_path:
+            link_path = ''
+        if not link_path:
             continue
         if (
-            occs is top_occurrence
-            or endpoint_path == top_path
-            or endpoint_path.startswith(top_path + '+')
-        ) and len(top_path) > len(containing_path):
-            containing_occurrence = top_occurrence
-            containing_path = top_path
+            occs is link_occurrence
+            or endpoint_path == link_path
+            or endpoint_path.startswith(link_path + '+')
+        ) and len(link_path) > len(containing_path):
+            containing_link = link_name
+            containing_path = link_path
 
-    if containing_occurrence is not None:
-        return top_level_link_name(containing_occurrence)
+    if containing_link is not None:
+        return containing_link
     return occurrence_link_name(occs)
 
 def link_occurrence_map(root):
     link_map = {}
-    for occs in top_level_occurrences(root):
+    for link_name, occs in _link_occurrence_candidates(root):
         is_base_link = is_base_link_occurrence(occs)
         if not is_base_link and not _is_exportable_occurrence(occs):
             continue
-        link_name = top_level_link_name(occs)
         if link_name not in link_map:
             link_map[link_name] = occs
     return link_map
@@ -301,11 +362,10 @@ def validate_occurrence_link_names(root):
             collisions.append('{} <= {}'.format(link_name, ', '.join(unique_sources)))
 
     top_level_names = {}
-    for occs in top_level_occurrences(root):
+    for link_name, occs in _link_occurrence_candidates(root):
         is_base_link = is_base_link_occurrence(occs)
         if not is_base_link and not _is_exportable_occurrence(occs):
             continue
-        link_name = top_level_link_name(occs)
         try:
             source_name = occs.fullPathName or occs.name
         except:
@@ -386,16 +446,17 @@ def visible_geometry_link_names(root, target_link_names=None):
     link_names = set()
     target_link_names = set(target_link_names) if target_link_names is not None else set()
 
-    def visit(occs, top_level=False):
+    def visit(occs, top_level=False, inside_link=False):
         if not _is_exportable_occurrence(occs):
             return
         link_name = top_level_link_name(occs) if top_level else occurrence_link_name(occs)
-        bodies = grouped_visible_bodies(occs, target_link_names)
-        if bodies:
-            link_names.add(link_name)
-            return
+        if not inside_link or link_name in target_link_names:
+            bodies = grouped_visible_bodies(occs, target_link_names)
+            if bodies:
+                link_names.add(link_name)
+                inside_link = True
         for child_occs in _child_occurrences(occs):
-            visit(child_occs, False)
+            visit(child_occs, False, inside_link)
 
     for occs in top_level_occurrences(root):
         visit(occs, True)
@@ -408,13 +469,14 @@ def disconnected_visible_geometry_links(root, target_link_names):
     return sorted(visible_links - target_link_names)
 
 def export_link_sources(root, target_link_names=None):
-    """Select top-level link assemblies and their grouped visible bodies."""
-    target_link_names = set(target_link_names) if target_link_names is not None else None
+    """Select assembly and nested moving links without sharing their bodies."""
+    link_occurrences = link_occurrence_map(root)
+    target_link_names = (set(target_link_names) if target_link_names is not None
+                         else set(link_occurrences))
     sources = []
     source_names = set()
-    for occs in top_level_occurrences(root):
-        export_name = top_level_link_name(occs)
-        if target_link_names is not None and export_name not in target_link_names:
+    for export_name, occs in link_occurrences.items():
+        if export_name not in target_link_names:
             continue
         if export_name in source_names or not _is_exportable_occurrence(occs):
             continue

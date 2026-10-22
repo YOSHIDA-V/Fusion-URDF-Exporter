@@ -157,6 +157,51 @@ class NestedJointLinkTests(unittest.TestCase):
         self.assertEqual(len(self.pad_names), 12)
         self.assertTrue(self.pad_names.issubset(mapping))
 
+    def test_deeper_moving_member_is_found_below_a_static_wrapper(self):
+        pad = self.pads[0]
+        pad.fullPathName = 'sensor:1+carrier:1+pad_right:1'
+        wrapper = Occurrence('carrier', 'sensor:1+carrier:1', children=[pad])
+        self.modules[0].childOccurrences._items[1] = wrapper
+        self.root = Root([self.base] + self.frames + self.modules, as_built_joints=self.edges)
+        targets = self.top_names | {utils.occurrence_link_name(item) for item in self.pads}
+        self.assertEqual(utils.visible_geometry_link_names(self.root, targets), targets)
+        sources = utils.export_link_sources(self.root, targets)
+        self.assertEqual({source['export_name'] for source in sources}, targets)
+        self.assertEqual(sum(len(source['bodies']) for source in sources), 31)
+
+    def test_hidden_nested_external_mount_keeps_its_static_assembly(self):
+        plate = self.plates[0]
+        mount = Occurrence('mount', plate.fullPathName + '+mount:1', visible=False)
+        plate.childOccurrences._items.append(mount)
+        plate.childOccurrences.count += 1
+        self.edges[6].occurrenceOne = mount
+        self.root = Root([self.base] + self.frames + self.modules, as_built_joints=self.edges)
+        self.assertEqual(utils.joint_endpoint_link_name(self.root, plate), 'sensor')
+        active = self.active()
+        self.assertEqual(len(active), 22)
+        self.assertEqual(sum(entry['type'] == 'prismatic' for entry in active), 12)
+
+    def test_visible_slider_without_limits_still_fails_preflight(self):
+        self.sliders[0].jointMotion.slideLimits = DisabledLimits()
+        entries = self.make()
+        fatal = Joint.partition_skipped_joints(entries)[1]
+        self.assertEqual(len(fatal), 1)
+        self.assertIn('invalid_joint_motion', entries[fatal[0]]['skip_reason'])
+
+    def test_hidden_assembly_does_not_leak_visible_member_flags(self):
+        self.modules[0].isVisible = False
+        sources = utils.export_link_sources(self.root)
+        self.assertFalse(any(source['occurrence'].fullPathName.startswith('sensor:1')
+                             for source in sources))
+        self.assertEqual(sum(entry['type'] == 'prismatic' for entry in self.active()), 9)
+
+    def test_static_direct_bodies_remain_with_the_attachment_plate(self):
+        extra_body = object()
+        self.modules[0].bRepBodies._items.append(extra_body)
+        self.modules[0].bRepBodies.count += 1
+        bodies = utils.grouped_visible_bodies(self.modules[0], self.expected_names)
+        self.assertEqual(bodies, [extra_body] + list(self.plates[0].bRepBodies))
+
 
 if __name__ == '__main__':
     unittest.main()

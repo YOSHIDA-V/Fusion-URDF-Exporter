@@ -133,8 +133,8 @@ class Joint:
 
         self.tran_xml = "\n".join(utils.prettify(tran).split("\n")[1:])
 
-def _clean_occurrence_name(root, occ):
-    return utils.joint_endpoint_link_name(root, occ)
+def _clean_occurrence_name(root, occ, link_occurrences=None):
+    return utils.joint_endpoint_link_name(root, occ, link_occurrences)
 
 def _safe_joint_name(joint):
     try:
@@ -380,13 +380,27 @@ def _relative_occurrence_pose(child_occurrence, parent_occurrence):
     except:
         return None
 
-def _joint_entry(root, joint, source, msg, visible_link_names=None):
+def _joint_entry(root, joint, source, msg, visible_link_names=None, link_occurrences=None):
     occurrence_one, occurrence_two = _safe_joint_occurrences(joint)
     if occurrence_one is None or occurrence_two is None:
         return _skipped_joint_entry(joint, source, 'invalid_joint_occurrence'), msg
 
-    parent_name = _clean_occurrence_name(root, occurrence_two)
-    child_name = _clean_occurrence_name(root, occurrence_one)
+    parent_name = _clean_occurrence_name(root, occurrence_two, link_occurrences)
+    child_name = _clean_occurrence_name(root, occurrence_one, link_occurrences)
+    try:
+        one_path = str(occurrence_one.fullPathName)
+        two_path = str(occurrence_two.fullPathName)
+        internal_hidden_member = (
+            one_path != two_path and one_path.split('+')[0] == two_path.split('+')[0]
+            and (not _is_visible(occurrence_one) or not _is_visible(occurrence_two))
+        )
+    except Exception:
+        internal_hidden_member = False
+    if internal_hidden_member:
+        skipped = _skipped_joint_entry(joint, source, 'hidden_joint_occurrence')
+        skipped.update(original_parent=parent_name, original_child=child_name,
+                       parent=parent_name, child=child_name)
+        return skipped, msg
     if visible_link_names is not None and (
         parent_name not in visible_link_names or child_name not in visible_link_names
     ):
@@ -578,7 +592,8 @@ def make_joints_dict(root, msg):
 
     for joint in _all_fusion_joints(root):
         source = 'as_built' if type(joint) == adsk.fusion.AsBuiltJoint else 'joint'
-        joint_dict, msg = _joint_entry(root, joint, source, msg, visible_link_names)
+        joint_dict, msg = _joint_entry(root, joint, source, msg, visible_link_names,
+                                      link_occurrences)
         if msg != SUCCESS_MSG:
             break
         if joint_dict is None:
