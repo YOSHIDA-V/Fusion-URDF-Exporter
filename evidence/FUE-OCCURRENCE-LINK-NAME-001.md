@@ -1,6 +1,13 @@
 # FUE-OCCURRENCE-LINK-NAME-001
 
-- State: ROOT_CAUSE_PROVEN.
+- State: PUSHED_CANDIDATE; real Fusion export remains unverified.
+- Latest user instruction: different occurrence names must remain separate, even when they share one Component definition. This supersedes the earlier shared-component rejection policy, without inferring names from neighboring joints or changing the CAD model.
+- Controlled result: all six regression tests and the 48-test candidate suite pass. A clean private snapshot including pre-existing local changes passes all 55 tests; those unrelated changes were not published as part of this candidate.
+- Selected-file result: six tests each pass against the clean integration snapshot, installed Script and installed AddIn files. The name-function bytecode/constant fingerprints match across all three targets. This is fixture execution, not a real Fusion model export.
+- Naming rule: base_link aliases remain canonical, the first instance retains its semantic name, and later instances retain their Fusion occurrence number. Mesh part identity/reuse rules are unchanged.
+- The old local test requiring rejection of shared instances was replaced with a test preserving both occurrence identities, as requested by the latest user instruction.
+- The first source-target diagnostic run was not used for qualification because it loaded a dirty checkout. Qualification was repeated using clean worktrees and installed non-Git runtime files; the rejected run is retained privately.
+- Actual Fusion export and output inspection are pending. Do not advance to TARGET_VERIFIED or PROMOTED yet.
 - Failure run: occurrence-names-baseline-20261022T004006Z, clean commit 9e8d935. Six tests ran: three failures, two errors, one pass.
 - Reproduced result: four occurrences collapse to two link sources/joint children; the Japanese-name pair is rejected by preflight. First-instance semantic names and shared mesh-part identity pass as a control.
 - Observed failure: distinct occurrence names ending in :1 and :2 are rejected as duplicate top-level URDF links.

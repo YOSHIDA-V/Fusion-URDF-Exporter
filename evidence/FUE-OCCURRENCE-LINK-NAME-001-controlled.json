@@ -1,0 +1,58 @@
+{
+  "issue_id": "FUE-OCCURRENCE-LINK-NAME-001",
+  "state": "FIXED_IN_CONTROLLED_ENVIRONMENT",
+  "candidate_commit": "25ab336ecf8e987c81d72a89cf6bb439e185f5c0",
+  "source_run_id": "occurrence-names-control-20261022T004714Z",
+  "source_runtime_commit": "2369800fd66615e0115fcc9ad4c34ca293e62a42",
+  "source_utils_sha256": "e32e5d05b2a2837de9842dd0c226603ca0fcaffbf549380d11fbb948653341c4",
+  "focused_tests": 6,
+  "focused_passed": 6,
+  "source_suite_tests": 48,
+  "source_suite_passed": 48,
+  "integration_run_id": "occurrence-names-integration-20261022T005032Z",
+  "integration_commit": "b22ea2febcab2b1b70830347110501121a298c64",
+  "integration_clean": true,
+  "integration_suite_tests": 55,
+  "integration_suite_passed": 55,
+  "selected_file_run_id": "occurrence-names-qualified-files-20261022T005839Z",
+  "selected_file_driver_commit": "25ab336ecf8e987c81d72a89cf6bb439e185f5c0",
+  "selected_file_clean_worktree": true,
+  "selected_file_driver_sha256": "a9654af26120310ad5723c5ce54457e4be4e8c7c36bcc223002c3de14da26540",
+  "selected_file_steps": [
+    {
+      "name": "clean_integration",
+      "pid": 51260,
+      "exit_code": 0,
+      "utils_sha256": "e32e5d05b2a2837de9842dd0c226603ca0fcaffbf549380d11fbb948653341c4",
+      "joint_sha256": "7bc294873e43936880827aad1cad9798ddeb0b9fcfc6f01e498aae7bfa03454b",
+      "function_sha256": "4cdb65e0d20c991a137314c787e02b7c83cc90bc252e15a454108e293e7c4e07",
+      "files_unchanged": true
+    },
+    {
+      "name": "script",
+      "pid": 18732,
+      "exit_code": 0,
+      "utils_sha256": "f301830b209ca9757b787adbd5634891d53818f0d8c6fcb25c0dcdebfdabb34a",
+      "joint_sha256": "7bc294873e43936880827aad1cad9798ddeb0b9fcfc6f01e498aae7bfa03454b",
+      "function_sha256": "4cdb65e0d20c991a137314c787e02b7c83cc90bc252e15a454108e293e7c4e07",
+      "files_unchanged": true
+    },
+    {
+      "name": "addin",
+      "pid": 27060,
+      "exit_code": 0,
+      "utils_sha256": "552fcd69b41b044444b474745057e17b6a8dcb9ad48d63ae14dd716bdbb71ee3",
+      "joint_sha256": "73d08f54d200841eef4bdb9720ccb293ef7f4bdca612b68ba669b7c425a11d0f",
+      "function_sha256": "4cdb65e0d20c991a137314c787e02b7c83cc90bc252e15a454108e293e7c4e07",
+      "files_unchanged": true
+    }
+  ],
+  "selected_file_tests_per_target": 6,
+  "all_name_function_hashes_match": true,
+  "fixture_assertions_changed": false,
+  "obsolete_policy": "rejecting all shared component definitions replaced by retaining distinct occurrence names, per latest user instruction",
+  "unchanged": "CAD model, joint poses/topology, mesh reuse implementation and unrelated source changes",
+  "real_Fusion_export_verified": false,
+  "promotion": "candidate only; no main promotion",
+  "private_data": "raw CAD names, target paths and geometry omitted"
+}
